@@ -40,7 +40,7 @@ var
 
   UDfaceMoveAllowed: array of array of boolean;
 
-  //movetable of cluster(x,y) center coordinate
+  //movetables for 3 coordinates
   UDCenterMove: array of array of UInt32;
   UDBrick256Move: array of array of UInt16;
   UDXCrossMove: array of array of UInt32;
@@ -280,8 +280,6 @@ begin
   fc.Free;
 end;
 
-
-// die move-tables sollten eigentlich für alle 1<=x<=y<=size div 2 gleich sein
 procedure createUDCenterMoveTable;
 var
   i, k: integer;
@@ -289,14 +287,14 @@ var
   fs: TFileStream;
   fc: faceletcube;
 const
-  fX = 'UDCenterMove';
+  fName = 'UDCenterMove';
 begin
   fc := faceletCube.Create(nil, 11); // 11 arbitrary
   SetLength(UDCenterMove, B_24_8, 3 * 18);
 
-  if FileExists(fX) then
+  if FileExists(fName) then
   begin
-    fs := TFileStream.Create(fX, fmOpenRead);
+    fs := TFileStream.Create(fName, fmOpenRead);
     for i := Low(UDCenterMove) to High(UDCenterMove) do
       fs.ReadBuffer(UDCenterMove[i][0], SizeOf(UInt32) * 3 * 18);
     fs.Free;
@@ -328,7 +326,7 @@ begin
         end;
       end;
     end;
-    fs := TFileStream.Create(fX, fmCreate);
+    fs := TFileStream.Create(fName, fmCreate);
     for i := Low(UDCenterMove) to High(UDCenterMove) do
       fs.WriteBuffer(UDCenterMove[i][0], SizeOf(UInt32) * 3 * 18);
     fs.Free;
@@ -530,7 +528,7 @@ begin
     fs := TFileStream.Create(fName, fmOpenRead);
     for i := 0 to N_SYMCENTCOORD * 256 - 1 do
     begin
-      if i mod 200000 = 0 then
+      if i mod 180000 = 0 then
         Form1.memo1.Lines.Text := Form1.memo1.Lines.Text + '.';
       Application.ProcessMessages;
       fs.ReadBuffer(used, SizeOf(used));

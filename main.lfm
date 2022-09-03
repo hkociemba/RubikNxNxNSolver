@@ -1,334 +1,342 @@
 object Form1: TForm1
-  Left = 2404
-  Height = 726
-  Top = 772
-  Width = 1086
+  Left = 1977
+  Height = 845
+  Top = 316
+  Width = 1183
   Caption = 'Form1'
-  ClientHeight = 706
-  ClientWidth = 1086
+  ClientHeight = 825
+  ClientWidth = 1183
   Menu = MainMenu1
   OnActivate = FormActivate
   OnCreate = FormCreate
   LCLVersion = '2.0.12.0'
   object Memo1: TMemo
     Left = 0
-    Height = 705
-    Top = 0
-    Width = 447
-    Anchors = [akTop, akLeft, akRight, akBottom]
+    Height = 824
+    Top = 1
+    Width = 424
+    Anchors = [akTop, akLeft, akBottom]
     ScrollBars = ssBoth
     TabOrder = 0
   end
-  object TabControl1: TTabControl
-    Left = 448
-    Height = 706
-    Top = 0
-    Width = 645
-    TabIndex = 0
-    Tabs.Strings = (
-      'Facelet Editor'
-      'Pattern Editor'
-    )
+  object PageControl2: TPageControl
+    Left = 424
+    Height = 829
+    Top = 1
+    Width = 759
+    ActivePage = TabSheet1
     Anchors = [akTop, akLeft, akRight, akBottom]
+    TabIndex = 0
     TabOrder = 1
-    object U: TButton
-      Left = 37
-      Height = 23
-      Top = 516
-      Width = 55
-      Anchors = [akRight, akBottom]
-      Caption = 'U'
-      OnMouseUp = UMouseUp
-      TabOrder = 1
-    end
-    object R: TButton
-      Tag = 2
-      Left = 101
-      Height = 23
-      Top = 516
-      Width = 55
-      Anchors = [akRight, akBottom]
-      Caption = 'R'
-      OnMouseUp = UMouseUp
-      TabOrder = 2
-    end
-    object F: TButton
-      Tag = 4
-      Left = 165
-      Height = 23
-      Top = 516
-      Width = 55
-      Anchors = [akRight, akBottom]
-      Caption = 'F'
-      OnMouseUp = UMouseUp
-      TabOrder = 3
-    end
-    object D: TButton
-      Tag = 1
-      Left = 37
-      Height = 23
-      Top = 548
-      Width = 55
-      Anchors = [akRight, akBottom]
-      Caption = 'D'
-      OnMouseUp = UMouseUp
-      TabOrder = 4
-    end
-    object L: TButton
-      Tag = 3
-      Left = 101
-      Height = 23
-      Top = 548
-      Width = 55
-      Anchors = [akRight, akBottom]
-      Caption = 'L'
-      OnMouseUp = UMouseUp
-      TabOrder = 5
-    end
-    object B: TButton
-      Tag = 5
-      Left = 165
-      Height = 23
-      Top = 548
-      Width = 55
-      Anchors = [akRight, akBottom]
-      Caption = 'B'
-      OnMouseUp = UMouseUp
-      TabOrder = 6
-    end
-    object SpinSliceX: TSpinEdit
-      Left = 288
-      Height = 23
-      Top = 512
-      Width = 54
-      Anchors = [akRight, akBottom]
-      MinValue = 1
-      TabOrder = 7
-      Value = 1
-    end
-    object SpinSliceY: TSpinEdit
-      Left = 400
-      Height = 23
-      Top = 512
-      Width = 50
-      Anchors = [akRight, akBottom]
-      MinValue = 1
-      TabOrder = 8
-      Value = 1
-    end
-    object Label1: TLabel
-      Left = 249
-      Height = 15
-      Top = 516
-      Width = 31
-      Anchors = [akRight, akBottom]
-      Caption = 'XSlice'
-      ParentColor = False
-    end
-    object Label2: TLabel
-      Left = 360
-      Height = 15
-      Top = 516
-      Width = 31
-      Anchors = [akRight, akBottom]
-      Caption = 'YSlice'
-      ParentColor = False
-    end
-    object GroupBox1: TGroupBox
-      Left = 37
-      Height = 120
-      Top = 582
-      Width = 243
-      Anchors = [akRight, akBottom]
-      Caption = 'Reset To'
-      ClientHeight = 100
-      ClientWidth = 239
-      TabOrder = 9
-      object BClean: TButton
-        Left = 5
-        Height = 25
-        Top = 8
-        Width = 75
-        Caption = 'Clean'
-        OnClick = BCleanClick
-        TabOrder = 0
+    object TabSheet1: TTabSheet
+      Caption = 'Facelet Editor'
+      ClientHeight = 801
+      ClientWidth = 751
+      object PaintBoxFaces: TPaintBox
+        Left = 0
+        Height = 584
+        Top = 0
+        Width = 755
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        OnMouseDown = PaintBoxFacesMouseDown
+        OnMouseMove = PaintBoxFacesMouseMove
+        OnPaint = PaintBoxFacesPaint
       end
-      object BEmpty: TButton
-        Left = 5
-        Height = 25
-        Top = 36
-        Width = 75
-        Caption = 'Empty'
-        OnClick = BEmptyClick
+      object GroupBox1: TGroupBox
+        Left = 8
+        Height = 120
+        Top = 672
+        Width = 267
+        Anchors = [akRight, akBottom]
+        Caption = 'Reset To'
+        ClientHeight = 100
+        ClientWidth = 263
+        TabOrder = 0
+        object BClean: TButton
+          Left = 5
+          Height = 25
+          Top = 8
+          Width = 75
+          Caption = 'Clean'
+          OnClick = BCleanClick
+          TabOrder = 0
+        end
+        object BEmpty: TButton
+          Left = 5
+          Height = 25
+          Top = 36
+          Width = 75
+          Caption = 'Empty'
+          OnClick = BEmptyClick
+          TabOrder = 1
+        end
+        object BRandom: TButton
+          Left = 5
+          Height = 25
+          Top = 64
+          Width = 75
+          Caption = 'Random'
+          OnClick = BRandomClick
+          TabOrder = 2
+        end
+        object BCoClean: TButton
+          Left = 93
+          Height = 25
+          Top = 8
+          Width = 40
+          Caption = 'Co'
+          OnClick = BCoCleanClick
+          TabOrder = 3
+        end
+        object BCoEmpty: TButton
+          Left = 93
+          Height = 25
+          Top = 36
+          Width = 40
+          Caption = 'Co'
+          OnClick = BCoEmptyClick
+          TabOrder = 4
+        end
+        object BCoRandom: TButton
+          Left = 93
+          Height = 25
+          Top = 64
+          Width = 40
+          Caption = 'Co'
+          OnClick = BCoRandomClick
+          TabOrder = 5
+        end
+        object BCeClean: TButton
+          Left = 141
+          Height = 25
+          Top = 8
+          Width = 40
+          Caption = 'Ce'
+          OnClick = BCeCleanClick
+          TabOrder = 6
+        end
+        object BCeEmpty: TButton
+          Left = 141
+          Height = 25
+          Top = 36
+          Width = 40
+          Caption = 'Ce'
+          OnClick = BCeEmptyClick
+          TabOrder = 7
+        end
+        object BCeRandom: TButton
+          Left = 141
+          Height = 25
+          Top = 64
+          Width = 40
+          Caption = 'Ce'
+          OnClick = BCeRandomClick
+          TabOrder = 8
+        end
+        object BEdClean: TButton
+          Left = 189
+          Height = 25
+          Top = 8
+          Width = 40
+          Caption = 'Ed'
+          OnClick = BEdCleanClick
+          TabOrder = 9
+        end
+        object BEdEmpty: TButton
+          Left = 189
+          Height = 25
+          Top = 36
+          Width = 40
+          Caption = 'Ed'
+          OnClick = BEdEmptyClick
+          TabOrder = 10
+        end
+        object BEdRandom: TButton
+          Left = 189
+          Height = 25
+          Top = 64
+          Width = 40
+          Caption = 'Ed'
+          OnClick = BEdRandomClick
+          TabOrder = 11
+        end
+      end
+      object U: TButton
+        Left = 24
+        Height = 23
+        Top = 600
+        Width = 55
+        Anchors = [akRight, akBottom]
+        Caption = 'U'
+        OnMouseUp = UMouseUp
         TabOrder = 1
       end
-      object BRandom: TButton
-        Left = 5
-        Height = 25
-        Top = 64
-        Width = 75
-        Caption = 'Random'
-        OnClick = BRandomClick
+      object R: TButton
+        Tag = 2
+        Left = 88
+        Height = 23
+        Top = 600
+        Width = 55
+        Anchors = [akRight, akBottom]
+        Caption = 'R'
+        OnMouseUp = UMouseUp
         TabOrder = 2
       end
-      object BCoClean: TButton
-        Left = 93
-        Height = 25
-        Top = 8
-        Width = 40
-        Caption = 'Co'
-        OnClick = BCoCleanClick
+      object F: TButton
+        Tag = 4
+        Left = 144
+        Height = 23
+        Top = 600
+        Width = 55
+        Anchors = [akRight, akBottom]
+        Caption = 'F'
+        OnMouseUp = UMouseUp
         TabOrder = 3
       end
-      object BCoEmpty: TButton
-        Left = 93
-        Height = 25
-        Top = 36
-        Width = 40
-        Caption = 'Co'
-        OnClick = BCoEmptyClick
+      object D: TButton
+        Tag = 1
+        Left = 24
+        Height = 23
+        Top = 632
+        Width = 55
+        Anchors = [akRight, akBottom]
+        Caption = 'D'
+        OnMouseUp = UMouseUp
         TabOrder = 4
       end
-      object BCoRandom: TButton
-        Left = 93
-        Height = 25
-        Top = 64
-        Width = 40
-        Caption = 'Co'
-        OnClick = BCoRandomClick
+      object L: TButton
+        Tag = 3
+        Left = 88
+        Height = 23
+        Top = 632
+        Width = 55
+        Anchors = [akRight, akBottom]
+        Caption = 'L'
+        OnMouseUp = UMouseUp
         TabOrder = 5
       end
-      object BCeClean: TButton
-        Left = 141
-        Height = 25
-        Top = 8
-        Width = 40
-        Caption = 'Ce'
-        OnClick = BCeCleanClick
+      object B: TButton
+        Tag = 5
+        Left = 144
+        Height = 23
+        Top = 632
+        Width = 55
+        Anchors = [akRight, akBottom]
+        Caption = 'B'
+        OnMouseUp = UMouseUp
         TabOrder = 6
       end
-      object BCeEmpty: TButton
-        Left = 141
-        Height = 25
-        Top = 36
-        Width = 40
-        Caption = 'Ce'
-        OnClick = BCeEmptyClick
+      object SpinSliceX: TSpinEdit
+        Left = 280
+        Height = 23
+        Top = 600
+        Width = 54
+        Anchors = [akRight, akBottom]
+        MinValue = 1
         TabOrder = 7
+        Value = 1
       end
-      object BCeRandom: TButton
-        Left = 141
-        Height = 25
-        Top = 64
-        Width = 40
-        Caption = 'Ce'
-        OnClick = BCeRandomClick
+      object SpinSliceY: TSpinEdit
+        Left = 392
+        Height = 23
+        Top = 600
+        Width = 50
+        Anchors = [akRight, akBottom]
+        MinValue = 1
         TabOrder = 8
+        Value = 1
       end
-      object BEdClean: TButton
-        Left = 189
-        Height = 25
-        Top = 8
-        Width = 40
-        Caption = 'Ed'
-        OnClick = BEdCleanClick
+      object Label1: TLabel
+        Left = 241
+        Height = 15
+        Top = 604
+        Width = 31
+        Anchors = [akRight, akBottom]
+        Caption = 'XSlice'
+        ParentColor = False
+      end
+      object Label2: TLabel
+        Left = 352
+        Height = 15
+        Top = 604
+        Width = 31
+        Anchors = [akRight, akBottom]
+        Caption = 'YSlice'
+        ParentColor = False
+      end
+      object Label3: TLabel
+        Left = 448
+        Height = 15
+        Top = 766
+        Width = 51
+        Anchors = [akRight, akBottom]
+        Caption = 'Cube Size'
+        ParentColor = False
+      end
+      object SpinSize: TSpinEdit
+        Left = 504
+        Height = 23
+        Top = 762
+        Width = 54
+        Anchors = [akRight, akBottom]
+        MaxValue = 145
+        MinValue = 7
+        OnChange = SpinSizeChange
         TabOrder = 9
+        Value = 7
       end
-      object BEdEmpty: TButton
-        Left = 189
+      object BCustomize: TButton
+        Left = 288
         Height = 25
-        Top = 36
-        Width = 40
-        Caption = 'Ed'
-        OnClick = BEdEmptyClick
+        Top = 760
+        Width = 149
+        Anchors = [akRight, akBottom]
+        Caption = 'Customize selected Color'
+        OnClick = BCustomizeClick
         TabOrder = 10
       end
-      object BEdRandom: TButton
-        Left = 189
-        Height = 25
-        Top = 64
-        Width = 40
-        Caption = 'Ed'
-        OnClick = BEdRandomClick
+      object CheckWide: TCheckBox
+        Left = 456
+        Height = 19
+        Top = 600
+        Width = 79
+        Anchors = [akRight, akBottom]
+        Caption = 'Wide Turns'
         TabOrder = 11
       end
+      object Button1: TButton
+        Left = 576
+        Height = 25
+        Top = 600
+        Width = 75
+        Anchors = [akRight, akBottom]
+        Caption = 'test'
+        OnClick = Button1Click
+        TabOrder = 12
+      end
+      object BPhase1: TButton
+        Left = 296
+        Height = 25
+        Top = 680
+        Width = 80
+        Anchors = [akRight, akBottom]
+        Caption = 'Solve Phase 1'
+        OnClick = BPhase1Click
+        TabOrder = 13
+      end
+      object BPhase2: TButton
+        Left = 384
+        Height = 25
+        Top = 680
+        Width = 80
+        Anchors = [akRight, akBottom]
+        Caption = 'Solve Phase 2'
+        OnClick = BPhase2Click
+        TabOrder = 14
+      end
     end
-    object Label3: TLabel
-      Left = 464
-      Height = 15
-      Top = 670
-      Width = 51
-      Anchors = [akRight, akBottom]
-      Caption = 'Cube Size'
-      ParentColor = False
-    end
-    object SpinSize: TSpinEdit
-      Left = 520
-      Height = 23
-      Top = 666
-      Width = 54
-      Anchors = [akRight, akBottom]
-      MaxValue = 145
-      MinValue = 7
-      OnChange = SpinSizeChange
-      TabOrder = 10
-      Value = 7
-    end
-    object BCustomize: TButton
-      Left = 288
-      Height = 25
-      Top = 666
-      Width = 149
-      Anchors = [akRight, akBottom]
-      Caption = 'Customize selected Color'
-      OnClick = BCustomizeClick
-      TabOrder = 11
-    end
-    object CheckWide: TCheckBox
-      Left = 304
-      Height = 19
-      Top = 548
-      Width = 79
-      Anchors = [akRight, akBottom]
-      Caption = 'Wide Turns'
-      TabOrder = 12
-    end
-    object Bevel1: TBevel
-      Left = 1
-      Height = 5
-      Top = 506
-      Width = 638
-      Anchors = [akLeft, akRight, akBottom]
-    end
-    object PaintBoxFaces: TPaintBox
-      Left = -1
-      Height = 480
-      Top = 24
-      Width = 639
-      Anchors = [akTop, akLeft, akRight, akBottom]
-      OnMouseDown = PaintBoxFacesMouseDown
-      OnMouseMove = PaintBoxFacesMouseMove
-      OnPaint = PaintBoxFacesPaint
-    end
-    object Button1: TButton
-      Left = 480
-      Height = 25
-      Top = 582
-      Width = 75
-      Anchors = [akRight, akBottom]
-      Caption = 'test'
-      OnClick = Button1Click
-      TabOrder = 13
-    end
-    object BPhase1: TButton
-      Left = 296
-      Height = 25
-      Top = 600
-      Width = 80
-      Anchors = [akRight, akBottom]
-      Caption = 'Solve Phase 1'
-      OnClick = BPhase1Click
-      TabOrder = 14
+    object TabSheet2: TTabSheet
+      Caption = 'Pattern Editor'
     end
   end
   object MainMenu1: TMainMenu
@@ -349,11 +357,11 @@ object Form1: TForm1
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 184
+    Left = 120
     Top = 624
   end
   object SaveDialog1: TSaveDialog
-    Left = 288
+    Left = 200
     Top = 624
   end
   object ColorDialog: TColorDialog
@@ -380,7 +388,7 @@ object Form1: TForm1
       'ColorS=F0FBFF'
       'ColorT=A4A0A0'
     )
-    Left = 376
+    Left = 264
     Top = 624
   end
 end

@@ -7,7 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main, cubedefs, facecube, phase1_tables, UDThreaded, phase1_unused;
+  Forms, main, cubedefs, facecube, phase1_tables, UDThreaded, phase1_unused,
+  phase2_tables;
 
 {$R *.res}
 

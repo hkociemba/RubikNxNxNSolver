@@ -132,7 +132,6 @@ end;
 procedure makeUDCenter.Execute;
 var
   idx, togo: integer;
-  i: integer;
 begin
   togo := 0;
   fc.found := False;
@@ -156,7 +155,7 @@ var
   mv: moves;
   sc1: SymCoord32;
   syms: UInt8;
-  n, altccy, altslx, key, foundIdx: integer;
+  n, altccy, altslx, key: integer;
 
   newccx, newccy, newslx, newsly: integer;
   aa: integer;
@@ -321,92 +320,36 @@ end;
 
 procedure makeUDAll.Execute;
 var
-  done, depth, i, j, total, totalLength: integer;
-  issolved: array of array of boolean;
-  hasFound: boolean;
+  i, j, totalLength: integer;
   fc: faceletcube;
   tt: threadWrapper;
 begin
   //++++++++++++++++++++++ make Plus-cross of phase1 +++++++++++++++++++++++++++++++
   fc := Form1.fcube;
-  Setlength(issolved, fc.size div 2 + 1, Form1.fcube.size div 2 + 1);
 
   totalLength := 0;
   synchronize(@showstuff);
 
-  total := 0;
-  for i := 1 to fc.size div 2 - 1 do
-  begin
-    issolved[i, fc.size div 2] := False;
-    Inc(total);//number of +orbits
-  end;
-  if not Odd(fc.size) then
-    total := 0;//no +cross for even sizes
-
-  done := 0;
-  depth := 0;
-  while done < total do
-  begin
-
-    //standard:
+  if Odd(fc.size) then
     for i := 1 to fc.size div 2 - 1 do
     begin
       if Form1.fcube.MakeUDPlusCross1(i, 20) then
       begin
-        hasFound := True;
-        Inc(done);
         Inc(totalLength, fc.mvIdx);
-        issolved[i, fc.size div 2] := True;
         ii := i;
         jj := fc.size div 2;
         fcfc := fc;
         synchronize(@printApply);
       end;
     end;
-
-    //altenatively:
-    //  repeat
-    //    hasFound := False;
-    //    for i := 1 to fc.size div 2 - 1 do
-    //    begin
-    //      if issolved[i, fc.size div 2] then
-    //        continue;
-
-    //      if Form1.fcube.MakeUDPlusCross1(i, depth) then
-    //      begin
-    //        hasFound := True;
-    //        Inc(done);
-    //        Inc(totalLength, fc.mvIdx);
-    //        issolved[i, fc.size div 2] := True;
-    //        ii := i;
-    //        jj := fc.size div 2;
-    //        fcfc := fc;
-    //        synchronize(@printApply);
-    //      end;
-    //    end;
-    //  until (not hasFound);
-    //  Inc(depth);
-
-  end;
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   //++++++++++++++++++++++++++++ fix center orbits of phase 1 ++++++++++++++++++
   synchronize(@showstuff2);
-  total := 0;
-  for i := 1 to fc.size div 2 - 2 do
-    for j := i + 1 to fc.size div 2 - 1 do
-    begin
-      issolved[i, j] := False;
-      Inc(total);
-    end;
-
-
-
 
   for i := 1 to fc.size div 2 - 2 do
     for j := i + 1 to fc.size div 2 - 1 do
     begin
-
       if Terminated then
         Exit;
       if stopProgram then
@@ -414,102 +357,25 @@ begin
         synchronize(@showstuff3);
         Exit;
       end;
-
       tt := threadWrapper.Create(i, j, 25, fc);
-      tt.WaitFor; // wichtig!
-
-      if Form1.fcube.mvIdx > -1 then
-      begin
-        hasFound := True;
-        Inc(done);
-        Inc(totalLength, fc.mvIdx);
-        issolved[i, j] := True;
-        ii := i;
-        jj := j;
-        synchronize(@printApply);
-      end;
+      tt.WaitFor; // important!
+      Inc(totalLength, fc.mvIdx);
+      ii := i;
+      jj := j;
+      synchronize(@printApply);
     end;
-
-
-
-
-  //done := 0;
-  //depth := 11;
-  //while done < total do
-  //begin
-  //  repeat
-  //    hasFound := False;
-  //    for i := 1 to fc.size div 2 - 2 do
-  //      for j := i + 1 to fc.size div 2 - 1 do
-  //      begin
-
-  //        if Terminated then
-  //          Exit;
-  //        if stopProgram then
-  //        begin
-  //          synchronize(@showstuff3);
-  //          Exit;
-  //        end;
-
-  //        if issolved[i, j] then
-  //          continue;
-
-  //        tt := threadWrapper.Create(i, j, depth, fc);
-  //        tt.WaitFor; // wichtig!
-
-  //        if Form1.fcube.mvIdx > -1 then
-  //        begin
-  //          hasFound := True;
-  //          Inc(done);
-  //          Inc(totalLength, fc.mvIdx);
-  //          issolved[i, j] := True;
-  //          ii := i;
-  //          jj := j;
-  //          synchronize(@printApply);
-  //        end;
-  //      end;
-  //  until (not hasFound);
-  //  Inc(depth);
-  // end;
-
-
-
-
-
 
   //++++++++++++++++++++++++++++ make X-cross of phase 1 +++++++++++++++++++++++
   synchronize(@showstuff4);
-  total := 0;
   for i := 1 to fc.size div 2 - 1 do
-  begin
-    issolved[i, i] := False;
-    Inc(total);
-  end;
-
-  done := 0;
-  depth := 0;
-  while done < total do
-  begin
-    repeat
-      hasFound := False;
-      for i := 1 to fc.size div 2 - 1 do
-      begin
-        if issolved[i, i] then
-          continue;
-        if fc.MakeUDXCross(i, depth) then
-        begin
-          hasFound := True;
-          Inc(done);
-          Inc(totalLength, fc.mvIdx);
-          issolved[i, i] := True;
-          ii := i;
-          jj := j;
-          synchronize(@printApply);
-        end;
-      end;
-    until (not hasFound);
-    Inc(depth);
-  end;
+    if Form1.fcube.MakeUDXCross(i, 20) then
+    begin
+      Inc(totalLength, fc.mvIdx);
+      ii := i;
+      jj := i;
+      fcfc := fc;
+      synchronize(@printApply);
+    end;
   Inc(grandTotal, totalLength);
   ii := totalLength;
   synchronize(@showstuff5);

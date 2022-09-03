@@ -1,6 +1,7 @@
 unit main;
 
-{$Define LOADPHASE1}
+//{$Define LOADPHASE1}
+{$Define LOADPHASE2}
 
 {$mode objfpc}{$H+}
 
@@ -25,8 +26,8 @@ type
     BEdEmpty: TButton;
     BEdRandom: TButton;
     BEmpty: TButton;
+    BPhase2: TButton;
     BRandom: TButton;
-    Bevel1: TBevel;
     BClean: TButton;
     BCoClean: TButton;
     BCustomize: TButton;
@@ -44,6 +45,7 @@ type
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     LoadCube: TMenuItem;
+    PageControl2: TPageControl;
     PaintBoxFaces: TPaintBox;
     R1: TButton;
     SaveCube: TMenuItem;
@@ -53,6 +55,8 @@ type
     SpinSliceX: TSpinEdit;
     SpinSize: TSpinEdit;
     SpinSliceY: TSpinEdit;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     U: TButton;
     R: TButton;
     F: TButton;
@@ -60,7 +64,6 @@ type
     L: TButton;
     B: TButton;
     Memo1: TMemo;
-    TabControl1: TTabControl;
     U1: TButton;
     procedure BCeCleanClick(Sender: TObject);
     procedure BCeEmptyClick(Sender: TObject);
@@ -75,6 +78,7 @@ type
     procedure BEdRandomClick(Sender: TObject);
     procedure BEmptyClick(Sender: TObject);
     procedure BPhase1Click(Sender: TObject);
+    procedure BPhase2Click(Sender: TObject);
     procedure BRandomClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -116,7 +120,7 @@ implementation
 
 { TForm1 }
 
-uses LCLIntf (*RGB*), phase1_tables, UDThreaded;
+uses LCLIntf (*RGB*), phase1_tables, phase2_tables, UDThreaded;
 
 procedure TForm1.MenuItem1Click(Sender: TObject);
 begin
@@ -153,11 +157,11 @@ begin
         begin
           fcube.faceCols[Ord(a), i, j] := ColorIndex(buf[idx]);
           Inc(idx);
-          if idx= fsN then
+          if idx = fsN then
           begin
-             Form1.Caption := ExtractFileName(curFilename);
-             fs.Free;
-             Exit;
+            Form1.Caption := ExtractFileName(curFilename);
+            fs.Free;
+            Exit;
           end;
         end;
   end;
@@ -533,7 +537,6 @@ var
   tt: makeUDAll;
 
 begin
-
   if BPhase1.Caption = 'Solve Phase 1' then
   begin
     BPhase1.Caption := 'Abort';
@@ -548,6 +551,73 @@ begin
     BPhase1.Caption := 'Solve Phase 1';
     stopProgram := True;
   end;
+end;
+
+procedure TForm1.BPhase2Click(Sender: TObject);
+var
+  i, j, total, totalLength, done, depth: integer;
+  hasFound: boolean;
+  fc: FaceletCube;
+begin
+  fc := fcube;
+  totalLength := 0;
+  Memo1.Lines.Add('Phase 2 - RL|FB centers to RL|FB faces:');
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('+cross:');
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+    if Form1.fcube.MakeFBPlusCross(i, 25) then
+    begin
+      hasFound := True;
+      Inc(done);
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, fc.size div 2);
+      fc.applyMoves(i, fc.size div 2);
+    end;
+  end;
+
+  Form1.Memo1.Lines.Add('');
+  Memo1.Lines.Add('cluster pairs:');
+
+  for i := 1 to fc.size div 2 - 2 do // size muss ungerade sein
+    for j := i + 1 to fc.size div 2 - 1 do
+    begin
+
+      if fcube.MakeFBFullCenter(i, j, 25) then
+      begin
+        Inc(totalLength, fcube.mvIdx);
+
+        fcube.printMoves(i, j);
+        fcube.applyMoves(i, j);
+      end;
+    end;
+
+
+  Form1.Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('xcross:');
+
+
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+
+    if fc.MakeFBXCross(i, depth) then
+    begin
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, i);
+      fc.applyMoves(i, i);
+    end;
+  end;
+  Inc(depth);
+  Inc(grandTotal, totalLength);
+  Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add('Number of moves in phase 2: ' + IntToStr(totalLength));
+  Form1.Memo1.Lines.Add('');
+  Application.ProcessMessages;
+
+  exit;
+
 end;
 
 procedure TForm1.BRandomClick(Sender: TObject);
@@ -566,11 +636,11 @@ end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 var
-  n, i, j, cls, sm, repcoord, coordtrans: integer;
+  i, j, cls, sm, repcoord, coordtrans: integer;
 begin
 
-  for i:= 1 to 100 do
-   memo1.Lines.Text:=memo1.Lines.Text+'.';
+  for i := 1 to 100 do
+    memo1.Lines.Text := memo1.Lines.Text + '.';
 
   PaintBoxFaces.Invalidate;
   Application.ProcessMessages;
@@ -582,7 +652,13 @@ procedure TForm1.FormActivate(Sender: TObject);
 begin
 {$IFDEF LOADPHASE1}
   createUDCentersSlice10;
-  BPhase1.Enabled:=true;;
+  BPhase1.Enabled := True;
+  ;
+{$ENDIF}
+ {$IFDEF LOADPHASE2}
+
+  BPhase2.Enabled := True;
+  ;
 {$ENDIF}
 end;
 
@@ -759,18 +835,23 @@ begin
 {$ENDIF}
 {$IFDEF LOADPHASE2}
   BPhase2.Visible := True;
-  workcube := FaceletCube.Create(nil, 11);
+  BPhase2.Enabled := False;
   createNextMovePhase2Table;
-  workcube.createFBCenterMoveTable(2, 4);
-  workcube.createFBXCrossMoveTable(2);
-  workcube.createFBSliceMoveTable(2, 4);
+  createFBCenterMoveTable;
+  createFBSliceMoveTable;
   createFBFaceMoveAllowedTable;
-
   createFBPlusCrossPruningTable;
-  createFBCenterSliceCoordPruningTable;
   createFBFullCenterSliceCoordPruningTable;
+  createFBXCrossMoveTable;
   createFBXCrossPruningTable;
-  workcube.Free;
+
+
+
+  //workcube.createFBSliceMoveTable(2, 4);
+
+
+  //createFBFullCenterSliceCoordPruningTable;
+  //workcube.Free;
 {$ENDIF}
 {$IFDEF LOADPHASE3}
   workcube := FaceletCube.Create(nil, 11);
@@ -804,7 +885,6 @@ end;
 
 
 end.
-
 
 
 
