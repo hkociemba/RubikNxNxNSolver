@@ -62,6 +62,7 @@ procedure createNextMovePhase1Table;
 var
   fc: faceletCube;
   mprev, mcurr: moves;
+
 begin
   fc := faceletCube.Create(nil, 11); // any odd value possible
   for mcurr := InitMove to yB3 do

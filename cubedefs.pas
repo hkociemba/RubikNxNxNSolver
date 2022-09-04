@@ -98,23 +98,23 @@ const
     true { noMove }
     );
 
-  // gibt die gültigen Züge an, wenn in Richtung der R und F Achse zusammen
-  // gesucht wird. Wird im Augenblick noch nicht benutzt
-  Phase3FRAllowed: Array [-1 .. 54] of Boolean = (true { initMove } , false,
-    false, false, false, false, false, { fU1..fD3 }
-    true, true, true, true, true, true, { fR1..fL3 }
-    true, true, true, true, true, true, { fF1..fB3 }
-    false, true, false, false, true, false, { xU1..xD1 }
-    false, true, false, false, true, false, { xR1..xL3 }
-    false, true, false, false, true, false, { xF1..xB3 }
-    false, true, false, false, true, false, { yU1..yD1 }
-    false, true, false, false, true, false, { yR1..yL3 }
-    false, true, false, false, true, false, { yF1..yB3 }
-    true { noMove }
-    );
+  //// gibt die gültigen Züge an, wenn in Richtung der R und F Achse zusammen
+  //// gesucht wird. Wird im Augenblick noch nicht benutzt
+  //Phase3FRAllowed: Array [-1 .. 54] of Boolean = (true { initMove } , false,
+  //  false, false, false, false, false, { fU1..fD3 }
+  //  true, true, true, true, true, true, { fR1..fL3 }
+  //  true, true, true, true, true, true, { fF1..fB3 }
+  //  false, true, false, false, true, false, { xU1..xD1 }
+  //  false, true, false, false, true, false, { xR1..xL3 }
+  //  false, true, false, false, true, false, { xF1..xB3 }
+  //  false, true, false, false, true, false, { yU1..yD1 }
+  //  false, true, false, false, true, false, { yR1..yL3 }
+  //  false, true, false, false, true, false, { yF1..yB3 }
+  //  true { noMove }
+  //  );
 
-  // Gilt, wenn in alle Richtungen gleichzeitig gesucht wird
-  Phase3AllAllowed: Array [-1 .. 54] of Boolean = (true { initMove } , true,
+  // In phase 3, square moves of slices or any face turns are allowed
+  Phase3Allowed: Array [-1 .. 54] of Boolean = (true { initMove } , true,
     true, true, true, true, true, { fU1..fD3 }
     true, true, true, true, true, true, { fR1..fL3 }
     true, true, true, true, true, true, { fF1..fB3 }
@@ -127,46 +127,46 @@ const
     true { noMove }
     );
 
-  // Gilt, wenn in die U,R,F Richtung einzeln gesucht wird
-  Phase3Allowed: Array [0 .. 2, -1 .. 54] of Boolean =
-  // axis=U
-    ((true { initMove } , true, true, true, true, true, true, { fU1..fD3 }
-    false, false, false, false, false, false, { fR1..fL3 }
-    false, false, false, false, false, false, { fF1..fB3 }
-    false, false, false, false, false, false, { xU1..xD1 }
-    false, true, false, false, true, false, { xR1..xL3 }
-    false, true, false, false, true, false, { xF1..xB3 }
-    false, false, false, false, false, false, { yU1..yD1 }
-    false, true, false, false, true, false, { yR1..yL3 }
-    false, true, false, false, true, false, { yF1..yB3 }
-    true { noMove }
-    ),
-    // axis=R
-    (true { initMove } , false, false, false, false, false, false,
-    { fU1..fD3 }
-    true, true, true, true, true, true, { fR1..fL3 }
-    false, false, false, false, false, false, { fF1..fB3 }
-    false, true, false, false, true, false, { xU1..xD1 }
-    false, false, false, false, false, false, { xR1..xL3 }
-    false, true, false, false, true, false, { xF1..xB3 }
-    false, true, false, false, true, false, { yU1..yD1 }
-    false, false, false, false, false, false, { yR1..yL3 }
-    false, true, false, false, true, false, { yF1..yB3 }
-    true { noMove }
-    ),
-    // axis=F
-    (true { initMove } , false, false, false, false, false, false,
-    { fU1..fD3 }
-    false, false, false, false, false, false, { fR1..fL3 }
-    true, true, true, true, true, true, { fF1..fB3 }
-    false, true, false, false, true, false, { xU1..xD1 }
-    false, true, false, false, true, false, { xR1..xL3 }
-    false, false, false, false, false, false, { xF1..xB3 }
-    false, true, false, false, true, false, { yU1..yD1 }
-    false, true, false, false, true, false, { yR1..yL3 }
-    false, false, false, false, false, false, { yF1..yB3 }
-    true { noMove }
-    ));
+  //// Gilt, wenn in die U,R,F Richtung einzeln gesucht wird
+  //Phase3Allowed: Array [0 .. 2, -1 .. 54] of Boolean =
+  //// axis=U
+  //  ((true { initMove } , true, true, true, true, true, true, { fU1..fD3 }
+  //  false, false, false, false, false, false, { fR1..fL3 }
+  //  false, false, false, false, false, false, { fF1..fB3 }
+  //  false, false, false, false, false, false, { xU1..xD1 }
+  //  false, true, false, false, true, false, { xR1..xL3 }
+  //  false, true, false, false, true, false, { xF1..xB3 }
+  //  false, false, false, false, false, false, { yU1..yD1 }
+  //  false, true, false, false, true, false, { yR1..yL3 }
+  //  false, true, false, false, true, false, { yF1..yB3 }
+  //  true { noMove }
+  //  ),
+  //  // axis=R
+  //  (true { initMove } , false, false, false, false, false, false,
+  //  { fU1..fD3 }
+  //  true, true, true, true, true, true, { fR1..fL3 }
+  //  false, false, false, false, false, false, { fF1..fB3 }
+  //  false, true, false, false, true, false, { xU1..xD1 }
+  //  false, false, false, false, false, false, { xR1..xL3 }
+  //  false, true, false, false, true, false, { xF1..xB3 }
+  //  false, true, false, false, true, false, { yU1..yD1 }
+  //  false, false, false, false, false, false, { yR1..yL3 }
+  //  false, true, false, false, true, false, { yF1..yB3 }
+  //  true { noMove }
+  //  ),
+  //  // axis=F
+  //  (true { initMove } , false, false, false, false, false, false,
+  //  { fU1..fD3 }
+  //  false, false, false, false, false, false, { fR1..fL3 }
+  //  true, true, true, true, true, true, { fF1..fB3 }
+  //  false, true, false, false, true, false, { xU1..xD1 }
+  //  false, true, false, false, true, false, { xR1..xL3 }
+  //  false, false, false, false, false, false, { xF1..xB3 }
+  //  false, true, false, false, true, false, { yU1..yD1 }
+  //  false, true, false, false, true, false, { yR1..yL3 }
+  //  false, false, false, false, false, false, { yF1..yB3 }
+  //  true { noMove }
+  //  ));
 
   // +++++++++++++the colors of the corner cubies++++++++++++++++++++++++++++++++++
   CCI: CornerColorIndex = ((UCol, RCol, FCol), (UCol, FCol, LCol),

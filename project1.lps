@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Debug"/>
-    <Units Count="14">
+    <Units Count="15">
       <Unit0>
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -20,8 +20,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="555"/>
-        <CursorPos X="19" Y="578"/>
+        <TopLine Value="832"/>
+        <CursorPos X="14" Y="859"/>
         <UsageCount Value="202"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -30,7 +30,8 @@
         <Filename Value="cubedefs.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
-        <CursorPos X="17" Y="69"/>
+        <TopLine Value="2"/>
+        <CursorPos X="32" Y="121"/>
         <UsageCount Value="202"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -38,8 +39,8 @@
         <Filename Value="facecube.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="1608"/>
-        <CursorPos Y="816"/>
+        <TopLine Value="55"/>
+        <CursorPos X="15" Y="82"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit3>
@@ -47,8 +48,8 @@
         <Filename Value="phase1_tables.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="461"/>
-        <CursorPos X="11" Y="621"/>
+        <TopLine Value="38"/>
+        <CursorPos Y="65"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit4>
@@ -57,27 +58,26 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UDThreaded"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="145"/>
-        <CursorPos X="27" Y="337"/>
+        <TopLine Value="224"/>
+        <CursorPos X="31" Y="255"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="phase1_unused.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="7"/>
-        <TopLine Value="135"/>
+        <EditorIndex Value="8"/>
         <CursorPos X="30" Y="149"/>
-        <UsageCount Value="130"/>
+        <UsageCount Value="149"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="phase2_tables.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="306"/>
-        <CursorPos X="4" Y="324"/>
-        <UsageCount Value="58"/>
+        <TopLine Value="62"/>
+        <CursorPos X="58" Y="71"/>
+        <UsageCount Value="77"/>
         <Loaded Value="True"/>
       </Unit7>
       <Unit8>
@@ -85,7 +85,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="2885"/>
         <CursorPos Y="2915"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit8>
       <Unit9>
         <Filename Value="C:\lazarus\lcl\lclmessageglue.pas"/>
@@ -93,156 +93,165 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="88"/>
         <CursorPos Y="116"/>
-        <UsageCount Value="73"/>
+        <UsageCount Value="71"/>
       </Unit9>
       <Unit10>
         <Filename Value="C:\lazarus\lcl\include\buttoncontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="7"/>
         <CursorPos Y="56"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit10>
       <Unit11>
         <Filename Value="C:\lazarus\lcl\include\buttons.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="142"/>
         <CursorPos Y="170"/>
-        <UsageCount Value="1"/>
+        <UsageCount Value="9"/>
       </Unit11>
       <Unit12>
         <Filename Value="C:\lazarus\lcl\interfaces\win32\win32object.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="386"/>
         <CursorPos Y="413"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit12>
       <Unit13>
         <Filename Value="fbunthreaded.pas"/>
         <UnitName Value="FBUnthreaded"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="17"/>
+        <UsageCount Value="15"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="phase3_tables.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="7"/>
+        <TopLine Value="41"/>
+        <CursorPos Y="122"/>
+        <UsageCount Value="27"/>
+        <Loaded Value="True"/>
+      </Unit14>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="425" TopLine="376"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="858" TopLine="832"/>
       </Position1>
       <Position2>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="391" Column="53" TopLine="376"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="44"/>
       </Position2>
       <Position3>
         <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="819"/>
+        <Caret Line="858" TopLine="832"/>
       </Position3>
       <Position4>
-        <Filename Value="main.pas"/>
-        <Caret Line="845" TopLine="819"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="21" Column="36"/>
       </Position4>
       <Position5>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="425" TopLine="376"/>
+        <Filename Value="phase1_tables.pas"/>
+        <Caret Line="61" Column="11"/>
       </Position5>
       <Position6>
-        <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="819"/>
+        <Filename Value="phase1_tables.pas"/>
+        <Caret Line="75" Column="36" TopLine="34"/>
       </Position6>
       <Position7>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="321" Column="9" TopLine="289"/>
+        <Filename Value="phase1_tables.pas"/>
+        <Caret Line="79" TopLine="34"/>
       </Position7>
       <Position8>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="302" TopLine="292"/>
+        <Filename Value="phase1_tables.pas"/>
+        <Caret Line="81" TopLine="34"/>
       </Position8>
       <Position9>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="338" TopLine="293"/>
+        <Filename Value="phase1_tables.pas"/>
+        <Caret Line="80" TopLine="38"/>
       </Position9>
       <Position10>
-        <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="819"/>
+        <Filename Value="facecube.pas"/>
+        <Caret Line="167" TopLine="140"/>
       </Position10>
       <Position11>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="338" TopLine="293"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="21" Column="36"/>
       </Position11>
       <Position12>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="312" TopLine="297"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="857" TopLine="831"/>
       </Position12>
       <Position13>
-        <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="819"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="43" Column="7"/>
       </Position13>
       <Position14>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="338" TopLine="297"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="44"/>
       </Position14>
       <Position15>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="342" TopLine="297"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="39"/>
       </Position15>
       <Position16>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="309" TopLine="297"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="858" Column="42" TopLine="831"/>
       </Position16>
       <Position17>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="342" TopLine="297"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="136" Column="8" TopLine="89"/>
       </Position17>
       <Position18>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="343" TopLine="300"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="121" Column="11" TopLine="42"/>
       </Position18>
       <Position19>
-        <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="819"/>
+        <Filename Value="facecube.pas"/>
+        <Caret Line="82" Column="15" TopLine="55"/>
       </Position19>
       <Position20>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="309" TopLine="300"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="117" Column="18" TopLine="74"/>
       </Position20>
       <Position21>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="343" Column="21" TopLine="300"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="15" Column="19" TopLine="2"/>
       </Position21>
       <Position22>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="338" Column="21" TopLine="300"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="69" Column="9" TopLine="42"/>
       </Position22>
       <Position23>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="343" Column="28" TopLine="300"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="101" Column="40" TopLine="75"/>
       </Position23>
       <Position24>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="338" Column="19" TopLine="312"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="11" Column="38" TopLine="4"/>
       </Position24>
       <Position25>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="343" Column="59" TopLine="312"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="857" TopLine="832"/>
       </Position25>
       <Position26>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="349" TopLine="306"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="858" TopLine="832"/>
       </Position26>
       <Position27>
-        <Filename Value="phase2_tables.pas"/>
-        <Caret Line="343" Column="19" TopLine="306"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="58" TopLine="37"/>
       </Position27>
       <Position28>
-        <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="819"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="122" TopLine="55"/>
       </Position28>
       <Position29>
-        <Filename Value="main.pas"/>
-        <Caret Line="594" Column="17" TopLine="568"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="72" TopLine="64"/>
       </Position29>
       <Position30>
-        <Filename Value="main.pas"/>
-        <Caret Line="846" TopLine="820"/>
+        <Filename Value="phase3_tables.pas"/>
+        <Caret Line="59" TopLine="75"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -251,14 +260,39 @@
     </RunParams>
   </ProjectSession>
   <Debugging>
-    <BreakPoints Count="1">
+    <BreakPoints Count="3">
       <Item1>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="main.pas"/>
-        <Line Value="846"/>
+        <Line Value="858"/>
       </Item1>
+      <Item2>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="phase3_tables.pas"/>
+        <Line Value="122"/>
+      </Item2>
+      <Item3>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="phase3_tables.pas"/>
+        <Line Value="59"/>
+      </Item3>
     </BreakPoints>
+    <Watches Count="3">
+      <Item1>
+        <Expression Value="mprev"/>
+      </Item1>
+      <Item2>
+        <Expression Value="mcurr"/>
+      </Item2>
+      <Item3>
+        <Expression Value="nextMovePhase3Arr[mprev, mcurr]"/>
+      </Item3>
+    </Watches>
   </Debugging>
 </CONFIG>

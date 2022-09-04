@@ -62,19 +62,24 @@ type
     procedure SearchUDXCross(ccx, slx, togo: integer);
 
     // phase 2
-    function nextMovePh2(idx: Integer; currMove: moves): moves;
-    function Phase2CenterCoord(x, y: Integer): Integer; // 0<=cc<12870
-    procedure InvPhase2CenterCoord(cc, x, y: Integer);
+    function nextMovePh2(idx: integer; currMove: moves): moves;
+    function Phase2CenterCoord(x, y: integer): integer; // 0<=cc<12870
+    procedure InvPhase2CenterCoord(cc, x, y: integer);
 
-    function Phase2SliceCoord(x, y: Integer): Integer; // 0<=cc<16
-    procedure InvPhase2SliceCoord(cc, x, y: Integer);
+    function Phase2SliceCoord(x, y: integer): integer; // 0<=cc<16
+    procedure InvPhase2SliceCoord(cc, x, y: integer);
 
-    function MakeFBPlusCross(x, maxMoves: Integer): Boolean; // Findet Zugfolge
-    procedure SearchFBPlusCross(cc, togo: Integer);
-    function MakeFBFullCenter(x, y, maxMoves: Integer): Boolean;
-    procedure SearchFBFullCenter(ccx, slx, ccy, togo: Integer);
-    function MakeFBXCross(x, maxMoves: Integer): Boolean;
-    procedure SearchFBXCross(ccx, sly, togo: Integer);
+    function MakeFBPlusCross(x, maxMoves: integer): boolean; // Findet Zugfolge
+    procedure SearchFBPlusCross(cc, togo: integer);
+    function MakeFBFullCenter(x, y, maxmoves: integer): boolean;
+    procedure SearchFBFullCenter(ccx, slx, ccy, togo: integer);
+    function MakeFBXCross(x, maxmoves: integer): boolean;
+    procedure SearchFBXCross(ccx, sly, togo: integer);
+
+    // phase 3
+    function nextMovePh3(idx: integer; currMove: moves): moves;
+    function Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
+    procedure InvPhase3CenterCoord(cc, x, y: Integer; a: Axis);
 
     //unused
 
@@ -85,7 +90,6 @@ type
     //  bycy_dist, togo: integer);
     //function Phase1BrickCoord(x :integer): integer; // 0<=cc<735471
     //procedure InvPhase1BrickCoord(cc, x: integer);
-
 
 
 
@@ -105,15 +109,15 @@ type
 
 //var
 
-  //phase 1
-  //1<=x<y<(size-1)/2
-  //UDXCrossMoveX: array of array of UInt32;
-  //UDXCrossMoveF: array of array of UInt32;
+//phase 1
+//1<=x<y<(size-1)/2
+//UDXCrossMoveX: array of array of UInt32;
+//UDXCrossMoveF: array of array of UInt32;
 
 
 implementation
 
-uses Windows, main, Forms, phase1_tables,phase2_tables;
+uses Windows, main, Forms, phase1_tables, phase2_tables;
 // Wendet die Symmetrie mit dem Index 0..15 auf Cluster(x,y) an
 // idx = 8*LR2 + 4*F2 + U4
 procedure faceletCube.applySymmetryByIndex(x, y, idx: integer);
@@ -225,8 +229,49 @@ var
 begin
   case s of
 
-    S_URF3: //Not used
-      ;
+    S_URF3:
+    begin
+      tmp := faceCols[Ord(U), x, y];
+      faceCols[Ord(U), x, y] := faceCols[Ord(F), size - 1 - y, x];
+      faceCols[Ord(F), size - 1 - y, x] := faceCols[Ord(R), size - 1 - x, size - 1 - y];
+      faceCols[Ord(R), size - 1 - x, size - 1 - y] := tmp;
+
+      tmp := faceCols[Ord(U), y, size - 1 - x];
+      faceCols[Ord(U), y, size - 1 - x] := faceCols[Ord(F), x, y];
+      faceCols[Ord(F), x, y] := faceCols[Ord(R), size - 1 - y, x];
+      faceCols[Ord(R), size - 1 - y, x] := tmp;
+
+      tmp := faceCols[Ord(U), size - 1 - x, size - 1 - y];
+      faceCols[Ord(U), size - 1 - x, size - 1 - y] := faceCols[Ord(F), y, size - 1 - x];
+      faceCols[Ord(F), y, size - 1 - x] := faceCols[Ord(R), x, y];
+      faceCols[Ord(R), x, y] := tmp;
+
+      tmp := faceCols[Ord(U), size - 1 - y, x];
+      faceCols[Ord(U), size - 1 - y, x] := faceCols[Ord(F), size - 1 - x, size - 1 - y];
+      faceCols[Ord(F), size - 1 - x, size - 1 - y] := faceCols[Ord(R), y, size - 1 - x];
+      faceCols[Ord(R), y, size - 1 - x] := tmp;
+
+      tmp := faceCols[Ord(D), x, y];
+      faceCols[Ord(D), x, y] := faceCols[Ord(B), size - 1 - y, x];
+      faceCols[Ord(B), size - 1 - y, x] := faceCols[Ord(L), x, y];
+      faceCols[Ord(L), x, y] := tmp;
+
+      tmp := faceCols[Ord(D), y, size - 1 - x];
+      faceCols[Ord(D), y, size - 1 - x] := faceCols[Ord(B), x, y];
+      faceCols[Ord(B), x, y] := faceCols[Ord(L), y, size - 1 - x];
+      faceCols[Ord(L), y, size - 1 - x] := tmp;
+
+      tmp := faceCols[Ord(D), size - 1 - x, size - 1 - y];
+      faceCols[Ord(D), size - 1 - x, size - 1 - y] := faceCols[Ord(B), y, size - 1 - x];
+      faceCols[Ord(B), y, size - 1 - x] := faceCols[Ord(L), size - 1 - x, size - 1 - y];
+      faceCols[Ord(L), size - 1 - x, size - 1 - y] := tmp;
+
+      tmp := faceCols[Ord(D), size - 1 - y, x];
+      faceCols[Ord(D), size - 1 - y, x] := faceCols[Ord(B), size - 1 - x, size - 1 - y];
+      faceCols[Ord(B), size - 1 - x, size - 1 - y] := faceCols[Ord(L), size - 1 - y, x];
+      faceCols[Ord(L), size - 1 - y, x] := tmp;
+    end;
+
     S_F2:
     begin
 
@@ -428,8 +473,8 @@ function faceletCube.clusterColorIndex(x, y, i: integer): ColorIndex;
 var
   faceIdx, face, xf, yf: integer;
 begin
-  xf:=0;
-  yf:=0;//initialize to prevent compiler warnings
+  xf := 0;
+  yf := 0;//initialize to prevent compiler warnings
   faceIdx := i mod 4;
   case faceIdx of
     0:
@@ -464,8 +509,8 @@ procedure faceletCube.setClusterColorIndex(x, y, i: integer; col: ColorIndex);
 var
   faceIdx, face, xf, yf: integer;
 begin
-  xf:=0;
-  yf:=0;//initialize to prevent compiler warnings
+  xf := 0;
+  yf := 0;//initialize to prevent compiler warnings
   faceIdx := i mod 4;
   case faceIdx of
     0:
@@ -895,8 +940,8 @@ end;
 //begin
 //  Result := Phase1CenterCoord(x, size div 2);
 //end;
-//
-//
+
+
 //procedure faceletCube.InvPhase1BrickCoord(cc,x: integer);
 //begin
 //  InvPhase1CenterCoord(cc, x, size div 2);
@@ -1439,10 +1484,11 @@ begin
       begin
         fxymoves[mvIdx] := mv;
         Inc(mvIdx);
-        if mv<xU1 then //
-           SearchUDXCross(UDXCrossMove[ccx, Ord(mv)], slx, togo - 1)
+        if mv < xU1 then
+          SearchUDXCross(UDXCrossMove[ccx, Ord(mv)], slx, togo - 1)
         else
-           SearchUDXCross(UDXCrossMove[ccx, Ord(mv)], UDBrick256Move[slx,Ord(mv)+18], togo - 1);
+          SearchUDXCross(UDXCrossMove[ccx, Ord(mv)],
+            UDBrick256Move[slx, Ord(mv) + 18], togo - 1);
         if found then
           Exit;
         Dec(mvIdx);
@@ -1453,7 +1499,7 @@ begin
 
 end;
 
-function faceletCube.nextMovePh2(idx: Integer; currMove: moves): moves;
+function faceletCube.nextMovePh2(idx: integer; currMove: moves): moves;
 var
   pm: moves;
 begin
@@ -1463,7 +1509,7 @@ begin
   begin
     if currMove = InitMove then
     begin
-      Exit(fR2) // U,D moves useless
+      Exit(fR2); // U,D moves useless
     end
     else
     begin
@@ -1476,7 +1522,7 @@ begin
   else
   begin
     pm := fxymoves[idx - 1]; // predecessor move
-    while true do
+    while True do
     begin
       while not Phase2Allowed[Ord(Succ(currMove))] do
         Inc(currMove);
@@ -1495,7 +1541,7 @@ begin
         else // pm<currmove<xU1
         begin
           if Ord(pm) div 3 = Ord(currMove) div 3 then
-             // same face
+            // same face
             continue
           else
             Exit(currMove);
@@ -1529,19 +1575,19 @@ end;
 
 // coordinate of FB-centers of cluster (x,y)
 // phase 1 has to be finished already!
-function faceletCube.Phase2CenterCoord(x, y: Integer): Integer;
+function faceletCube.Phase2CenterCoord(x, y: integer): integer;
 var
-  occupied: array [0 .. 15] of Boolean;
+  occupied: array [0 .. 15] of boolean;
   c: ColorIndex;
-  i, s, k, n: Integer;
+  i, s, k, n: integer;
 begin
   for i := 0 to 15 do
   begin
     c := clusterColorIndex(x, y, i + 8); // +8 because we start with R-face
     if (c = FCol) or (c = BCol) then
-      occupied[i] := true
+      occupied[i] := True
     else
-      occupied[i] := false;
+      occupied[i] := False;
   end;
 
   s := 0;
@@ -1555,17 +1601,17 @@ begin
       s := s + Cnk(n, k);
     Dec(n);
   end;
-  result := s; // ID is 0
+  Result := s; // ID is 0
 end;
 
-procedure faceletCube.InvPhase2CenterCoord(cc, x, y: Integer);
+procedure faceletCube.InvPhase2CenterCoord(cc, x, y: integer);
 var
-  n, k, v, c: Integer;
-  occupied: array [0 .. 15] of Boolean;
+  n, k, v, c: integer;
+  occupied: array [0 .. 15] of boolean;
   col, setCol: ColorIndex;
 begin
   for n := 0 to 15 do
-    occupied[n] := false;
+    occupied[n] := False;
   n := 15;
   k := 7;
   while k >= 0 do
@@ -1574,7 +1620,7 @@ begin
     if cc < v then
     begin
       Dec(k);
-      occupied[n] := true;
+      occupied[n] := True;
     end
     else
       Dec(cc, v);
@@ -1591,7 +1637,7 @@ begin
       begin
         k := 0;
         while (clusterColorIndex(x, y, k + 8) <> setCol) or
-          (occupied[k] and (k < c) (* do not change already set *) ) do
+          (occupied[k] and (k < c) (* do not change already set *)) do
           Inc(k);
         setClusterColorIndex(x, y, c + 8, setCol);
         setClusterColorIndex(x, y, k + 8, col);
@@ -1603,40 +1649,40 @@ begin
 end;
 
 
-function faceletCube.MakeFBPlusCross(x, maxMoves: Integer): Boolean;
+function faceletCube.MakeFBPlusCross(x, maxMoves: integer): boolean;
 var
-  idx, togo: Integer;
+  idx, togo: integer;
 begin
   togo := 0;
-  found := false;
+  found := False;
   for idx := Low(fxymoves) to High(fxymoves) do
     fxymoves[idx] := InitMove;
-  while found = false do
+  while found = False do
   begin
     if togo > maxMoves then
-      Exit(false);
+      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchFBPlusCross(Phase2CenterCoord(x, size div 2), togo);
     Inc(togo);
   end;
-  result := true;
+  Result := True;
 end;
 
-procedure faceletCube.SearchFBPlusCross(cc, togo: Integer);
+procedure faceletCube.SearchFBPlusCross(cc, togo: integer);
 var
   mv: moves;
-  newcc: Integer;
+  newcc: integer;
 begin
   if (FBPlusCrossPrun[cc] > togo) then
     Exit;
   if togo = 0 then
   begin
-    found := true;
+    found := True;
   end
   else
   begin
     mv := InitMove;
-    while true do
+    while True do
     begin
       if mvIdx = 0 then
         mv := nextMovePhase2Arr[NoMove, mv]
@@ -1645,13 +1691,13 @@ begin
 
       if mv = NoMove then
       begin
-        Exit
+        Exit;
       end
       else
       begin
 
-        if mv <yU1 then
-            newcc := FBCenterMove[cc, Ord(mv)]
+        if mv < yU1 then
+          newcc := FBCenterMove[cc, Ord(mv)]
         else
           continue;//no y-moves for +cluster
 
@@ -1665,7 +1711,7 @@ begin
         if found then
           // return without changing mvIdx
           Exit;
-        Dec(mvIdx)
+        Dec(mvIdx);
       end;
     end;
 
@@ -1673,9 +1719,9 @@ begin
 end;
 
 // x<>y und +cross muss schon gesetzt sein!
-function faceletCube.Phase2SliceCoord(x, y: Integer): Integer;
+function faceletCube.Phase2SliceCoord(x, y: integer): integer;
 var
-  m, idx: Integer;
+  m, idx: integer;
   c: ColorIndex;
 begin
   m := (size - 1) div 2; // Index der mittleren Slice
@@ -1699,13 +1745,13 @@ begin
   idx := 2 * idx;
   if (c <> FCol) and (c <> BCol) then
     Inc(idx);
-  result := idx
+  Result := idx;
 end;
 
 
-procedure faceletCube.InvPhase2SliceCoord(cc, x, y: Integer);
+procedure faceletCube.InvPhase2SliceCoord(cc, x, y: integer);
 var
-  sc, m: Integer;
+  sc, m: integer;
 begin
 
   m := (size - 1) div 2;
@@ -1777,31 +1823,28 @@ begin
   end;
 end;
 
-procedure faceletCube.SearchFBFullCenter(ccx, slx, ccy, togo: Integer);
+procedure faceletCube.SearchFBFullCenter(ccx, slx, ccy, togo: integer);
 var
   mv: moves;
-  sc1: SymCoord32;
-  syms: UInt8;
-  n, altccy, altslx, key, foundIdx: Integer;
 
-  newccx, newccy, newslx: Integer;
+  newccx, newccy, newslx: integer;
 
 begin
 
   Application.ProcessMessages;
 
-  if (FBFullCenterSlicePrun[UInt64(B_16_8) * (UInt64(B_16_8) * slx + ccx) + ccy]
-    > togo) then
+  if (FBFullCenterSlicePrun[UInt64(B_16_8) * (UInt64(B_16_8) * slx + ccx) +
+    ccy] > togo) then
     Exit;
   if togo = 0 then
   begin
-    found := true;
+    found := True;
   end
   else
   begin
     mv := InitMove;
 
-    while true do
+    while True do
     begin
       if mvIdx = 0 then
         mv := nextMovePhase2Arr[NoMove, mv]
@@ -1812,27 +1855,27 @@ begin
 
       if mv = NoMove then
       begin
-        Exit
+        Exit;
       end
       else
       begin
         case mv of
           fU1..FB3:
           begin
-             newccx := FBCenterMove[ccx, Ord(mv)];
-             newccy := FBCenterMove[ccy, Ord(mv)];
-             newslx := slx;
+            newccx := FBCenterMove[ccx, Ord(mv)];
+            newccy := FBCenterMove[ccy, Ord(mv)];
+            newslx := slx;
           end;
           xU1..xB3:
           begin
             newccx := FBCenterMove[ccx, Ord(mv)];
-            newccy := FBCenterMove[ccy, Ord(mv)+18];
+            newccy := FBCenterMove[ccy, Ord(mv) + 18];
             newslx := FBSliceMove[slx, Ord(mv)];
           end;
           yU1..yB3:
           begin
             newccx := FBCenterMove[ccx, Ord(mv)];
-            newccy := FBCenterMove[ccy, Ord(mv)-18];
+            newccy := FBCenterMove[ccy, Ord(mv) - 18];
             newslx := FBSliceMove[slx, Ord(mv)];
           end;
         end;
@@ -1850,7 +1893,7 @@ begin
         if found then
           // kehre zurück, ohne mvIdx zu verändern
           Exit;
-        Dec(mvIdx)
+        Dec(mvIdx);
       end;
     end;
 
@@ -1859,41 +1902,34 @@ end;
 
 
 
-function faceletCube.MakeFBFullCenter(x, y, maxMoves: Integer): Boolean;
+function faceletCube.MakeFBFullCenter(x, y, maxMoves: integer): boolean;
 var
-  idx, togo: Integer;
+  idx, togo: integer;
   //i: Integer;
 begin
   togo := 0;
-  found := false;
+  found := False;
   for idx := Low(fxymoves) to High(fxymoves) do
     fxymoves[idx] := InitMove;
 
   // for i := 0 to 30 do
   // testCount[i] := 0;
 
-  while found = false do
+  while found = False do
   begin
     if togo > maxMoves then
-      Exit(false);
+      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchFBFullCenter(Phase2CenterCoord(x, y), Phase2SliceCoord(x, y),
       Phase2CenterCoord(y, x), togo);
     Inc(togo);
   end;
-  result := true;
+  Result := True;
 end;
 
-procedure faceletCube.SearchFBXCross(ccx, sly, togo: Integer);
+procedure faceletCube.SearchFBXCross(ccx, sly, togo: integer);
 var
   mv: moves;
-  // fAllowed: Boolean;
-  sc1: SymCoord32;
-  syms: UInt8;
-  n, altccy, altslx, key, foundIdx: Integer;
-
-  newccx, newccy, newslx, newsly: Integer;
-
 begin
 
   Application.ProcessMessages;
@@ -1901,12 +1937,12 @@ begin
     Exit;
   if togo = 0 then
   begin
-    found := true;
+    found := True;
   end
   else
   begin
     mv := InitMove;
-    while true do
+    while True do
     begin
       if mvIdx = 0 then
         mv := nextMovePhase2Arr[NoMove, mv]
@@ -1916,7 +1952,7 @@ begin
         continue;
       if mv > xB3 then
       begin
-        Exit
+        Exit;
       end
       else
       begin
@@ -1927,12 +1963,12 @@ begin
           SearchFBXCross(FBXCrossMove[ccx, Ord(mv)], sly, togo - 1)
         else
           SearchFBXCross(FBXCrossMove[ccx, Ord(mv)],
-            FBSliceMove[sly, Ord(mv)+18], togo - 1);
+            FBSliceMove[sly, Ord(mv) + 18], togo - 1);
         // y-Koordinate hat die beiden low bits
         if found then
           // kehre zurück, ohne mvIdx zu verändern
           Exit;
-        Dec(mvIdx)
+        Dec(mvIdx);
       end;
     end;
 
@@ -1940,27 +1976,173 @@ begin
 
 end;
 
-function faceletCube.MakeFBXCross(x, maxMoves: Integer): Boolean;
+function faceletCube.MakeFBXCross(x, maxMoves: integer): boolean;
 var
-  idx, togo: Integer;
-  i: Integer;
+  idx, togo: integer;
 begin
   togo := 0;
-  found := false;
+  found := False;
   for idx := Low(fxymoves) to High(fxymoves) do
     fxymoves[idx] := InitMove;
 
-  while found = false do
+  while found = False do
   begin
     if togo > maxMoves then
-      Exit(false);
+      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
-    SearchFBXCross(Phase2CenterCoord(x, x), Phase2SliceCoord(x, x) and
-      $3, togo);
+    SearchFBXCross(Phase2CenterCoord(x, x), Phase2SliceCoord(x, x) and $3, togo);
     // $3 um die y-slice coordinate zu erhalten, die die hinteren Bits enthält
     Inc(togo);
   end;
-  result := true;
+  Result := True;
+
+end;
+
+/// ////////////////////////// Phase 3 /////////////////////////////////////////
+
+
+function faceletCube.nextMovePh3(idx: integer; currMove: moves): moves;
+var
+  pm: moves;
+begin
+  if currMove = yB3 then // done
+    Exit(NoMove);
+  if idx = 0 then
+  begin
+      while not Phase3Allowed[Ord(Succ(currMove))] do
+        Inc(currMove);
+      Exit(Succ(currMove));
+  end
+  else
+  begin
+    pm := fxymoves[idx - 1]; // predecessor move
+    while True do
+    begin
+      while not Phase3Allowed[Ord(Succ(currMove))] do
+        Inc(currMove);
+      currMove := Succ(currMove);
+      if currMove = NoMove then
+        Exit(NoMove);
+
+      if Ord(pm) < Ord(xU1) then //previous move is face move
+      begin
+        if (Ord(currMove) <= Ord(pm)) then
+          //all face moves commute restricted to the centers
+          continue;
+        if Ord(currMove) >= Ord(xU1) then //face move followed by slice move
+          // always valid
+          Exit(currMove)
+        else // pm<currmove<xU1
+        begin
+          if Ord(pm) div 3 = Ord(currMove) div 3 then
+            // same face
+            continue
+          else
+            Exit(currMove);
+        end;
+      end;
+
+      //Ord(pm) >= Ord(xU1), previous move is slice move
+      if (Ord(pm) div 6) mod 3 <> (Ord(currMove) div 6) mod 3 then
+        Exit(currMove);
+      // pm and currMove are on different axes and hence do not commute
+
+
+      // both moves are on the same axis and commute
+      // we can force an order
+      if Ord(currMove) <= Ord(pm) then
+        continue;
+
+      // if the  prefixes f,x,y are different for both moves, currmove is valid
+      if Ord(currMove) div 18 <> Ord(pm) div 18 then
+        Exit(currMove);
+
+      // we have the same prefix and the same axis
+      if (Ord(currMove) mod 6) div 3 <> (Ord(pm) mod 6) div 3 then
+        // moves are on different slices of the axis
+        Exit(currMove)
+      else
+        continue;
+    end;
+  end;
+end;
+
+
+// in phase 3 a (x,y) cluster separates into 3 subclusters of size 8
+//one for each direction of the cube
+function faceletCube.Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
+var
+  occupied: array [0 .. 7] of Boolean;
+  c: ColorIndex;
+  i, s, k, n: Integer;
+begin
+  for i := 0 to 7 do
+  begin
+    c := clusterColorIndex(x, y, i + 4 * Ord(a)); //
+    if c = ColorIndex(Ord(a)) then
+      occupied[i] := true
+    else
+      occupied[i] := false;
+  end;
+
+  s := 0;
+  k := 3; // 4 Cubies
+  n := 7; // auf 8 Positionen
+  while k >= 0 do
+  begin
+    if occupied[n] then
+      Dec(k)
+    else
+      s := s + Cnk(n, k);
+    Dec(n);
+  end;
+  result := 69 - s; // ID soll 0 sein
+end;
+
+//axis 0,2,4 are used
+procedure faceletCube.InvPhase3CenterCoord(cc, x, y: Integer; a: Axis);
+var
+  n, k, v, c: Integer;
+  occupied: array [0 .. 7] of Boolean;
+  col, setCol: ColorIndex;
+begin
+  cc := 69 - cc;
+  for n := 0 to 7 do
+    occupied[n] := false;
+  n := 7;
+  k := 3;
+  while k >= 0 do
+  begin
+    v := Cnk(n, k);
+    if cc < v then
+    begin
+      Dec(k);
+      occupied[n] := true;
+    end
+    else
+      Dec(cc, v);
+    Dec(n);
+  end;
+
+  n := 0;
+  setCol := ColorIndex(Ord(a));
+  for c := 0 to 7 do
+    if occupied[c] then
+    begin
+      col := clusterColorIndex(x, y, c + 4 * Ord(a));
+      if col <> setCol then
+      begin
+        k := 0;
+        while (clusterColorIndex(x, y, k + 4 * Ord(a)) <> setCol) or
+          (occupied[k] and (k < c) (* die gesetzten nicht verändern *) ) do
+          Inc(k);
+        setClusterColorIndex(x, y, c + 4 * Ord(a), setCol);
+        setClusterColorIndex(x, y, k + 4 * Ord(a), col);
+      end;
+      Inc(n);
+      if n = 4 then // ab n=4 gegenüberliegende Farbe benutzen
+        setCol := ColorIndex(Ord(a) + 1);;
+    end;
 end;
 
 

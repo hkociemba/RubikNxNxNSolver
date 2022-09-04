@@ -1,7 +1,7 @@
 unit main;
-
 //{$Define LOADPHASE1}
-{$Define LOADPHASE2}
+//{$Define LOADPHASE2}
+{$Define LOADPHASE3}
 
 {$mode objfpc}{$H+}
 
@@ -120,7 +120,7 @@ implementation
 
 { TForm1 }
 
-uses LCLIntf (*RGB*), phase1_tables, phase2_tables, UDThreaded;
+uses LCLIntf (*RGB*), phase1_tables, phase2_tables,phase3_tables, UDThreaded;
 
 procedure TForm1.MenuItem1Click(Sender: TObject);
 begin
@@ -639,8 +639,7 @@ var
   i, j, cls, sm, repcoord, coordtrans: integer;
 begin
 
-  for i := 1 to 100 do
-    memo1.Lines.Text := memo1.Lines.Text + '.';
+ fcube.applySymmetry(1,2,S_URF3);
 
   PaintBoxFaces.Invalidate;
   Application.ProcessMessages;
@@ -854,25 +853,25 @@ begin
   //workcube.Free;
 {$ENDIF}
 {$IFDEF LOADPHASE3}
-  workcube := FaceletCube.Create(nil, 11);
-  createNextMovePhase3Tables;
-  workcube.createPhase3CenterMoveTables(2, 4);
-  workcube.createPhase3SliceMoveTables(2, 4);
-  workcube.createPhase3OrthoSliceMoveTables(2, 4);
-  workcube.createPhase3XCrossMoveTables(2);
-
-  createPhase3PlusCrossPruningTable;
-  Setlength(Phase3FullCenterSlicePrun, 3, B_8_4 * B_8_4 * B_8_4 * B_8_4);
-  createPhase3FullCenterSliceCoordPruningTable(U);
-  createPhase3FullCenterSliceCoordPruningTable(R);
-  createPhase3FullCenterSliceCoordPruningTable(F);
-
-  Setlength(Phase3XCrossPrun, 3, B_8_4 * B_8_4 * 16);
-  createPhase3XCrossPruningTable(U);
-  createPhase3XCrossPruningTable(R);
-  createPhase3XCrossPruningTable(F);
-  BPhase3.Visible := True;
-  workcube.Free;
+  //workcube := FaceletCube.Create(nil, 11);
+  createNextMovePhase3Table;
+  createPhase3CenterMoveTable;
+  //workcube.createPhase3SliceMoveTables(2, 4);
+  //workcube.createPhase3OrthoSliceMoveTables(2, 4);
+  //workcube.createPhase3XCrossMoveTables(2);
+  //
+  //createPhase3PlusCrossPruningTable;
+  //Setlength(Phase3FullCenterSlicePrun, 3, B_8_4 * B_8_4 * B_8_4 * B_8_4);
+  //createPhase3FullCenterSliceCoordPruningTable(U);
+  //createPhase3FullCenterSliceCoordPruningTable(R);
+  //createPhase3FullCenterSliceCoordPruningTable(F);
+  //
+  //Setlength(Phase3XCrossPrun, 3, B_8_4 * B_8_4 * 16);
+  //createPhase3XCrossPruningTable(U);
+  //createPhase3XCrossPruningTable(R);
+  //createPhase3XCrossPruningTable(F);
+  //BPhase3.Visible := True;
+  //workcube.Free;
 {$ENDIF}
 {$IFDEF LOADPHASE4}
   workcube := FaceletCube.Create(nil, 11);

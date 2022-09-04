@@ -252,7 +252,7 @@ begin
             newsly := UDBrick256Move[sly, Ord(mv) - 18];
           end;
         end;
-
+         { TODO : check this }
         // dies bringt 2-3s
         //if (newccx = ccx) and (newslx = slx) and (newccy = ccy) then
         //  continue;

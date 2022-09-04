@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, main, cubedefs, facecube, phase1_tables, UDThreaded, phase1_unused,
-  phase2_tables;
+  phase2_tables, phase3_tables;
 
 {$R *.res}
 
