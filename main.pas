@@ -102,21 +102,22 @@ type
   const
     off = 5; // offset des fcube im Fenster
   public
-    fcube: FaceletCube; // für den facelet-Editor
+    fcube: FaceletCube; // fcube for the facelet editor
 
   end;
 
 var
   Form1: TForm1;
   testcount: integer;
-  curFilename: string; // Name der zuletzt geladenen/gespeicherten Datei
-  stopProgram: boolean; // Flag, dass den gewünschten Abbruch anzeigt
-  grandTotal: integer; // Gesamte Anzahl der Züge von allen Phasen
+  curFilename: string; //name of last loaded/saved file
+  stopProgram: boolean; // flag for program abortion
+  grandTotal: integer; // total number of moves for all phases
+  hcube:FaceletCube;//for different purposes
 
 implementation
 
 {$R *.lfm}
-{$R cursors.res}// wichtig damit die custom cursor funktionieren
+{$R cursors.res}// important for custom cursors
 
 { TForm1 }
 
@@ -638,8 +639,14 @@ procedure TForm1.Button1Click(Sender: TObject);
 var
   i, j, cls, sm, repcoord, coordtrans: integer;
 begin
+  //for i:=0 to 4900 do
+  //begin
+  //  fcube.InvPhase3RLFBCenterCoord(i,1,2);
+  //  j:=1;
+  //end;
+  Inc(grandTotal);
+ fcube.InvPhase3RLFBCenterCoord(grandTotal mod 4900,1,2);
 
- fcube.applySymmetry(1,2,S_URF3);
 
   PaintBoxFaces.Invalidate;
   Application.ProcessMessages;
@@ -803,6 +810,7 @@ begin
     cubedefs.Color[NoCol]);
 
   fcube := FaceletCube.Create(PaintBoxFaces.Canvas, SpinSize.Value);
+  hcube := FaceletCube.Create(nil, 11);//arbitrary value
   // facelet editor
   Screen.Cursors[1] := LoadCursor(HInstance, 'Eimer'); // cursor for filling
   Screen.Cursors[2] := LoadCursor(HInstance, 'Pipette');
@@ -853,10 +861,12 @@ begin
   //workcube.Free;
 {$ENDIF}
 {$IFDEF LOADPHASE3}
-  //workcube := FaceletCube.Create(nil, 11);
+
   createNextMovePhase3Table;
   createPhase3CenterMoveTable;
-  //workcube.createPhase3SliceMoveTables(2, 4);
+  createPhase3Brick4096MoveTable;
+  createPh3FaceMoveAllowedTable;
+  createPhase3RLFBCenterMoveTable;
   //workcube.createPhase3OrthoSliceMoveTables(2, 4);
   //workcube.createPhase3XCrossMoveTables(2);
   //

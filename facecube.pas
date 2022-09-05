@@ -25,12 +25,13 @@ type
     mvIdx: integer; // Helper variables for search function
     found: boolean;
     fxymoves: array [0 .. 30] of moves; // f-moves und xy-slice moves
-    clustersave: array [1 .. 2, 0 .. 23] of ColorIndex;
+    //clustersave: array [1 .. 2, 0 .. 23] of ColorIndex;
     // permutations of the remapped edgecluster. Wird mit getEdgeCluster(y)gefüllt.
     edgeCluster: array [0 .. 23] of integer;
 
     //procedure setSize(s: Integer);
     function getSize: integer;
+    procedure initCluster(x,y:Integer);
     // slice move 0<=slice<size
     procedure move(a: Axis; slice: integer);
     // Wendet die Symmetrie auf das Cluster (x,y) an
@@ -80,6 +81,13 @@ type
     function nextMovePh3(idx: integer; currMove: moves): moves;
     function Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
     procedure InvPhase3CenterCoord(cc, x, y: Integer; a: Axis);
+    function Phase3RLFBCenterCoord(x, y: Integer): Integer;
+    procedure InvPhase3RLFBCenterCoord(cc, x, y: Integer);
+
+    function Phase3Brick4096Coord(x, y: Integer): Integer;
+    procedure InvPhase3Brick4096Coord(b, x, y: Integer);
+
+
 
     //unused
 
@@ -851,6 +859,15 @@ begin
     Exit(EDGEORIENTATIONERROR);
   Result := EDGENOERROR;
 end;
+
+//set the solved position for a cluster
+procedure faceletcube.initCluster(x,y:Integer);
+var i:Integer;
+begin
+  for i:= 0 to 23 do
+   setClusterColorIndex(x, y, i, ColorIndex(i div 4 ));
+end;
+
 
 constructor faceletCube.Create(cvas: TCanvas; sz: integer);
 var
@@ -2066,6 +2083,18 @@ begin
     end;
   end;
 end;
+ function faceletCube.Phase3RLFBCenterCoord(x, y: Integer): Integer;
+ //0<=cc<4900
+ begin
+   Result:= 70*Phase3CenterCoord(x,y,R)+Phase3CenterCoord(x,y,F)
+ end;
+
+ procedure faceletCube.InvPhase3RLFBCenterCoord(cc, x, y: Integer);
+  begin
+    InvPhase3CenterCoord(cc mod 70, x,y, F);
+    InvPhase3CenterCoord(cc div 70, x,y, R);
+  end;
+
 
 
 // in phase 3 a (x,y) cluster separates into 3 subclusters of size 8
@@ -2145,6 +2174,132 @@ begin
     end;
 end;
 
+
+function faceletcube.Phase3Brick4096Coord(x, y: Integer): Integer;
+var s2,r: Integer;
+begin
+  r:=0;
+  s2:= size div 2;
+  if clusterColorIndex(x,s2,0)<>UCol then Inc(r); //center cluster
+  r:= r*2;
+  if clusterColorIndex(x,s2,1)<>UCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(x,s2,2)<>UCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(x,s2,3)<>UCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(x,s2,8)<>RCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(x,s2,10)<>RCol then Inc(r);
+  r:=r*2;
+
+  if clusterColorIndex(y,s2,0)<>UCol then Inc(r); //center cluster
+  r:= r*2;
+  if clusterColorIndex(y,s2,1)<>UCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(y,s2,2)<>UCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(y,s2,3)<>UCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(y,s2,8)<>RCol then Inc(r);
+  r:=r*2;
+  if clusterColorIndex(y,s2,10)<>RCol then Inc(r);
+  Result:=r;
+end;
+
+procedure faceletcube.InvPhase3Brick4096Coord(b,x, y: Integer);
+var s2, i: Integer;
+begin
+  s2:= size div 2;
+  hcube.initCluster(2,5);//helper cube with x=2 and y=3 and size=11
+   hcube.initCluster(3,5);
+  if Odd(b) then //10
+  begin
+    hcube.move(D,3);
+    hcube.move(D,3);
+  end;
+  b:=b div 2;
+  if Odd(b) then  //8
+  begin
+    hcube.move(U,3);
+    hcube.move(U,3);
+  end;
+  b:=b div 2;
+  if Odd(b) then
+  begin
+    hcube.move(L,3); //3
+    hcube.move(L,3);
+  end;
+  b:=b div 2;
+  if Odd(b) then //2
+  begin
+    hcube.move(F,3);
+    hcube.move(F,3);
+  end;
+  b:=b div 2;
+  if Odd(b) then  //1
+  begin
+    hcube.move(R,3);
+    hcube.move(R,3);
+  end;
+  b:=b div 2;
+  if Odd(b) then
+  begin
+    hcube.move(cubedefs.B,3); //0
+    hcube.move(cubedefs.B,3);
+  end;
+  b:=b div 2;
+
+  if Odd(b) then //10
+  begin
+    hcube.move(D,2);
+    hcube.move(D,2);
+  end;
+  b:=b div 2;
+  if Odd(b) then  //8
+  begin
+    hcube.move(U,2);
+    hcube.move(U,2);
+  end;
+  b:=b div 2;
+  if Odd(b) then
+  begin
+    hcube.move(L,2); //3
+    hcube.move(L,2);
+  end;
+  b:=b div 2;
+  if Odd(b) then //2
+  begin
+    hcube.move(F,2);
+    hcube.move(F,2);
+  end;
+  b:=b div 2;
+  if Odd(b) then  //1
+  begin
+    hcube.move(R,2);
+    hcube.move(R,2);
+  end;
+  b:=b div 2;
+  if Odd(b) then
+  begin
+    hcube.move(cubedefs.B,2); //0
+    hcube.move(cubedefs.B,2);
+  end;
+
+  for i:= 0 to 23 do
+  begin
+    setClusterColorIndex(x,s2,i,hcube.clusterColorIndex(2,5,i));
+    setClusterColorIndex(y,s2,i,hcube.clusterColorIndex(3,5,i));
+    //hcube has size 11, 11 div 2 = 5
+  end;
+end;
+
+  // for a := U to B do
+  //begin
+  //  c := ColorIndex(Ord(a));
+  //  for i := 0 to size - 1 do
+  //    for j := 0 to size - 1 do
+  //      faceCols[Ord(a), i, j] := c;
 
 
 //function faceletCube.SearchUDCent(x, y, maxMoves: integer): boolean;
