@@ -42,6 +42,10 @@ type
     c_idx: UInt32;
     sym: UInt16;
   end;
+  SymCoord16 = record
+    c_idx: UInt16;
+    sym: UInt16;
+  end;
 
   States32 = record
     state: array of UInt32;
@@ -68,7 +72,7 @@ const
   B_24_12 = 2704156;
   N_SYMCENTCOORD = 92247; // Anzahl der Äquivalenzklassen der UDCenterCoord
   N_SYMBRICKCOORD= 46935; // Anzahl der Äquivalenzklassen der UDBrickCoord
-  N_UDHASH = 536870912; // 2^29
+  N_SYMBRICK4096COORD= 640; // Number of equivalence classes of
 
   // wohin facelets bei  180 Drehungen, deren slice durch U,R,F gehen, abgebildet werden.
   oppositeU: array [0 .. 23] of Integer = (-1, -1, -1, -1, -1, -1, -1, -1, 14,

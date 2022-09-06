@@ -81,12 +81,12 @@ type
     function nextMovePh3(idx: integer; currMove: moves): moves;
     function Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
     procedure InvPhase3CenterCoord(cc, x, y: Integer; a: Axis);
-    function Phase3RLFBCenterCoord(x, y: Integer): Integer;
+    function Phase3RLFBCenterCoord(x, y: Integer): UInt16;
     procedure InvPhase3RLFBCenterCoord(cc, x, y: Integer);
 
     function Phase3Brick4096Coord(x, y: Integer): Integer;
     procedure InvPhase3Brick4096Coord(b, x, y: Integer);
-
+    function badBrick(p,x1,x2:Integer):Boolean;
 
 
     //unused
@@ -244,6 +244,13 @@ begin
       faceCols[Ord(F), size - 1 - y, x] := faceCols[Ord(R), size - 1 - x, size - 1 - y];
       faceCols[Ord(R), size - 1 - x, size - 1 - y] := tmp;
 
+      tmp := faceCols[Ord(D), x, y];
+      faceCols[Ord(D), x, y] := faceCols[Ord(B), size - 1 - y, x];
+      faceCols[Ord(B), size - 1 - y, x] := faceCols[Ord(L), x, y];
+      faceCols[Ord(L), x, y] := tmp;
+
+      if (y=x)and (size-1=2*x) then exit;
+
       tmp := faceCols[Ord(U), y, size - 1 - x];
       faceCols[Ord(U), y, size - 1 - x] := faceCols[Ord(F), x, y];
       faceCols[Ord(F), x, y] := faceCols[Ord(R), size - 1 - y, x];
@@ -258,11 +265,6 @@ begin
       faceCols[Ord(U), size - 1 - y, x] := faceCols[Ord(F), size - 1 - x, size - 1 - y];
       faceCols[Ord(F), size - 1 - x, size - 1 - y] := faceCols[Ord(R), y, size - 1 - x];
       faceCols[Ord(R), y, size - 1 - x] := tmp;
-
-      tmp := faceCols[Ord(D), x, y];
-      faceCols[Ord(D), x, y] := faceCols[Ord(B), size - 1 - y, x];
-      faceCols[Ord(B), size - 1 - y, x] := faceCols[Ord(L), x, y];
-      faceCols[Ord(L), x, y] := tmp;
 
       tmp := faceCols[Ord(D), y, size - 1 - x];
       faceCols[Ord(D), y, size - 1 - x] := faceCols[Ord(B), x, y];
@@ -287,6 +289,12 @@ begin
       faceCols[Ord(U), x, y] := faceCols[Ord(D), size - 1 - x, size - 1 - y];
       faceCols[Ord(D), size - 1 - x, size - 1 - y] := tmp;
 
+      tmp := faceCols[Ord(R), x, y];
+      faceCols[Ord(R), x, y] := faceCols[Ord(L), size - 1 - x, size - 1 - y];
+      faceCols[Ord(L), size - 1 - x, size - 1 - y] := tmp;
+
+      if (y=x)and (size-1=2*x) then exit;//center facelets for odd cubes
+
       tmp := faceCols[Ord(U), y, size - 1 - x];
       faceCols[Ord(U), y, size - 1 - x] := faceCols[Ord(D), size - 1 - y, x];
       faceCols[Ord(D), size - 1 - y, x] := tmp;
@@ -298,6 +306,8 @@ begin
       tmp := faceCols[Ord(U), size - 1 - y, x];
       faceCols[Ord(U), size - 1 - y, x] := faceCols[Ord(D), y, size - 1 - x];
       faceCols[Ord(D), y, size - 1 - x] := tmp;
+
+
 
       tmp := faceCols[Ord(F), x, y];
       faceCols[Ord(F), x, y] := faceCols[Ord(F), size - 1 - x, size - 1 - y];
@@ -315,9 +325,8 @@ begin
       faceCols[Ord(B), y, size - 1 - x] := faceCols[Ord(B), size - 1 - y, x];
       faceCols[Ord(B), size - 1 - y, x] := tmp;
 
-      tmp := faceCols[Ord(R), x, y];
-      faceCols[Ord(R), x, y] := faceCols[Ord(L), size - 1 - x, size - 1 - y];
-      faceCols[Ord(L), size - 1 - x, size - 1 - y] := tmp;
+
+
 
       tmp := faceCols[Ord(R), y, size - 1 - x];
       faceCols[Ord(R), y, size - 1 - x] := faceCols[Ord(L), size - 1 - y, x];
@@ -354,6 +363,7 @@ begin
       faceCols[Ord(R), x, y] := faceCols[Ord(B), x, y];
       faceCols[Ord(B), x, y] := faceCols[Ord(L), x, y];
       faceCols[Ord(L), x, y] := tmp;
+      if (y=x)and (size-1=2*x) then exit;//center facelets for odd cubes
 
       tmp := faceCols[Ord(F), y, size - 1 - x];
       faceCols[Ord(F), y, size - 1 - x] := faceCols[Ord(R), y, size - 1 - x];
@@ -376,7 +386,7 @@ begin
       faceCols[Ord(B), size - 1 - y, x] := faceCols[Ord(L), size - 1 - y, x];
       faceCols[Ord(L), size - 1 - y, x] := tmp;
     end;
-    S_LR2:  //Only valid for clusters with reflectional symmetry!
+    S_LR2:  //Only valid for clusters with reflectional symmetry, x or +cluster!
     begin
       for a := U to B do
       begin
@@ -407,6 +417,8 @@ begin
       tmp := faceCols[Ord(L), x, y];
       faceCols[Ord(L), x, y] := faceCols[Ord(R), x, size - 1 - y];
       faceCols[Ord(R), x, size - 1 - y] := tmp;
+
+       if (y=x)and (size-1=2*x) then exit;//center facelets for odd cubes
 
       tmp := faceCols[Ord(L), y, size - 1 - x];
       faceCols[Ord(L), y, size - 1 - x] := faceCols[Ord(R), y, x];
@@ -2083,8 +2095,8 @@ begin
     end;
   end;
 end;
- function faceletCube.Phase3RLFBCenterCoord(x, y: Integer): Integer;
- //0<=cc<4900
+ function faceletCube.Phase3RLFBCenterCoord(x, y: Integer): UInt16;
+ //0<=cc<B_8_4^2
  begin
    Result:= 70*Phase3CenterCoord(x,y,R)+Phase3CenterCoord(x,y,F)
  end;
@@ -2102,13 +2114,14 @@ end;
 function faceletCube.Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
 var
   occupied: array [0 .. 7] of Boolean;
-  c: ColorIndex;
+  c,centc: ColorIndex;
   i, s, k, n: Integer;
 begin
+  centc:= faceCols[Ord(a),size div 2, size div 2]; //center color
   for i := 0 to 7 do
   begin
     c := clusterColorIndex(x, y, i + 4 * Ord(a)); //
-    if c = ColorIndex(Ord(a)) then
+    if c = centc then
       occupied[i] := true
     else
       occupied[i] := false;
@@ -2154,7 +2167,7 @@ begin
   end;
 
   n := 0;
-  setCol := ColorIndex(Ord(a));
+  setCol := faceCols[Ord(a),size div 2, size div 2]; //center color
   for c := 0 to 7 do
     if occupied[c] then
     begin
@@ -2163,47 +2176,64 @@ begin
       begin
         k := 0;
         while (clusterColorIndex(x, y, k + 4 * Ord(a)) <> setCol) or
-          (occupied[k] and (k < c) (* die gesetzten nicht verändern *) ) do
+          (occupied[k] and (k < c) (* do not change already set colors *) ) do
           Inc(k);
         setClusterColorIndex(x, y, c + 4 * Ord(a), setCol);
         setClusterColorIndex(x, y, k + 4 * Ord(a), col);
       end;
       Inc(n);
-      if n = 4 then // ab n=4 gegenüberliegende Farbe benutzen
-        setCol := ColorIndex(Ord(a) + 1);;
+      if n = 4 then
+        setCol := faceCols[Ord(a)+1,size div 2, size div 2]; //opposite center color
     end;
 end;
 
+function faceletcube.badBrick(p,x1,x2:Integer):Boolean;
+var c1,c2:Integer;
+begin
+  c1:= Ord(clusterColorIndex(p,size div 2,x1));
+  c2:=Ord(clusterColorIndex(p,size div 2,x2));
+  Result:= Abs(c1-c2)<>1;
+end;
 
 function faceletcube.Phase3Brick4096Coord(x, y: Integer): Integer;
 var s2,r: Integer;
+  fc,rc:ColorIndex;
 begin
+  //return -1 for invalid configurations
+  if badBrick(x,8,12) or badBrick(x,9,15) or badBrick(x,10,14) or badBrick(x,11,13) then exit(-1);
+  if badBrick(x,16,20) or badBrick(x,17,23) or badBrick(x,18,22) or badBrick(x,19,21) then exit(-1);
+  if badBrick(y,8,12) or badBrick(y,9,15) or badBrick(y,10,14) or badBrick(y,11,13) then exit(-1);
+  if badBrick(y,16,20) or badBrick(y,17,23) or badBrick(y,18,22) or badBrick(y,19,21) then exit(-1);
+
+
+  rc:= faceCols[Ord(cubedefs.R), size div 2, size div 2];
+  fc:= faceCols[Ord(F), size div 2, size div 2];
   r:=0;
   s2:= size div 2;
-  if clusterColorIndex(x,s2,0)<>UCol then Inc(r); //center cluster
+  if clusterColorIndex(x,s2,9)<>rc then Inc(r); //center cluster
   r:= r*2;
-  if clusterColorIndex(x,s2,1)<>UCol then Inc(r);
+  if clusterColorIndex(x,s2,17)<>fc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(x,s2,2)<>UCol then Inc(r);
+  if clusterColorIndex(x,s2,11)<>rc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(x,s2,3)<>UCol then Inc(r);
+  if clusterColorIndex(x,s2,19)<>fc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(x,s2,8)<>RCol then Inc(r);
+  if clusterColorIndex(x,s2,8)<>rc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(x,s2,10)<>RCol then Inc(r);
+  if clusterColorIndex(x,s2,10)<>rc then Inc(r);
   r:=r*2;
 
-  if clusterColorIndex(y,s2,0)<>UCol then Inc(r); //center cluster
+  if clusterColorIndex(y,s2,9)<>rc then Inc(r); //center cluster
   r:= r*2;
-  if clusterColorIndex(y,s2,1)<>UCol then Inc(r);
+  if clusterColorIndex(y,s2,17)<>fc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(y,s2,2)<>UCol then Inc(r);
+  if clusterColorIndex(y,s2,11)<>rc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(y,s2,3)<>UCol then Inc(r);
+  if clusterColorIndex(y,s2,19)<>fc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(y,s2,8)<>RCol then Inc(r);
+  if clusterColorIndex(y,s2,8)<>rc then Inc(r);
   r:=r*2;
-  if clusterColorIndex(y,s2,10)<>RCol then Inc(r);
+  if clusterColorIndex(y,s2,10)<>rc then Inc(r);
   Result:=r;
 end;
 

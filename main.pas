@@ -638,14 +638,38 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var
   i, j, cls, sm, repcoord, coordtrans: integer;
+  s: String;
 begin
-  //for i:=0 to 4900 do
+   Memo1.Lines.Add(Inttostr(fcube.Phase3Brick4096Coord(1,2)));
+
+
+  //for i:=0 to 4096 do
   //begin
-  //  fcube.InvPhase3RLFBCenterCoord(i,1,2);
+  //  fcube.InvPhase3Brick4096Coord(i,1,2);
+  //  if fcube.Phase3Brick4096Coord(1,2)<>i then
   //  j:=1;
   //end;
-  Inc(grandTotal);
- fcube.InvPhase3RLFBCenterCoord(grandTotal mod 4900,1,2);
+  //
+
+
+
+
+  //Inc(grandTotal);
+  //Memo1.Lines.Add(IntToSTr(grandTotal));
+  //fcube.InvPhase3RLFBCenterCoord(3000, 1, 2);
+  //if odd(grandTotal) then
+
+   // fcube.applyInvSymmetryByIndex(1, 2, 1);
+   //fcube.applyInvSymmetryByIndex(3, 3, grandTotal div 2);
+
+   // fcube.applySymmetryByIndex(1, 2, 1);
+   //fcube.applySymmetryByIndex(3, 3, grandTotal div 2);
+
+
+
+   //fcube.applySymmetry(1, 3, S_LR2);
+   //fcube.applySymmetry(2, 3, S_LR2);
+ //fcube.InvPhase3RLFBCenterCoord(grandTotal mod 4900,1,2);
 
 
   PaintBoxFaces.Invalidate;
@@ -665,6 +689,9 @@ begin
 
   BPhase2.Enabled := True;
   ;
+{$ENDIF}
+{$IFDEF LOADPHASE3}
+createPh3Brick4096RLFBCentPruningTable;
 {$ENDIF}
 end;
 
@@ -867,6 +894,9 @@ begin
   createPhase3Brick4096MoveTable;
   createPh3FaceMoveAllowedTable;
   createPhase3RLFBCenterMoveTable;
+  createPh3Brick4096CoordToSymCoordTable;
+  createPh3RLFBCenterCoordSymTransTable;
+
   //workcube.createPhase3OrthoSliceMoveTables(2, 4);
   //workcube.createPhase3XCrossMoveTables(2);
   //
