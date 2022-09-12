@@ -24,14 +24,14 @@ type
 
     mvIdx: integer; // Helper variables for search function
     found: boolean;
-    fxymoves: array [0 .. 30] of moves; // f-moves und xy-slice moves
+    fxymoves: array [0 .. 50] of moves; // f-moves und xy-slice moves
     //clustersave: array [1 .. 2, 0 .. 23] of ColorIndex;
     // permutations of the remapped edgecluster. Wird mit getEdgeCluster(y)gefüllt.
     edgeCluster: array [0 .. 23] of integer;
 
     //procedure setSize(s: Integer);
     function getSize: integer;
-    procedure initCluster(x,y:Integer);
+    procedure initCluster(x, y: integer);
     // slice move 0<=slice<size
     procedure move(a: Axis; slice: integer);
     // Wendet die Symmetrie auf das Cluster (x,y) an
@@ -79,15 +79,29 @@ type
 
     // phase 3
     function nextMovePh3(idx: integer; currMove: moves): moves;
-    function Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
-    procedure InvPhase3CenterCoord(cc, x, y: Integer; a: Axis);
-    function Phase3RLFBCenterCoord(x, y: Integer): UInt16;
-    procedure InvPhase3RLFBCenterCoord(cc, x, y: Integer);
+    function Phase3CenterCoord(x, y: integer; a: Axis): integer;
+    procedure InvPhase3CenterCoord(cc, x, y: integer; a: Axis);
+    function Phase3RLFBCenterCoord(x, y: integer): UInt16;
+    procedure InvPhase3RLFBCenterCoord(cc, x, y: integer);
 
-    function Phase3Brick4096Coord(x, y: Integer): Integer;
-    procedure InvPhase3Brick4096Coord(b, x, y: Integer);
-    function badBrick(p,x1,x2:Integer):Boolean;
+    function Phase3Brick4096Coord(x, y: integer): integer;
+    procedure InvPhase3Brick4096Coord(b, x, y: integer);
+    function badBrick(p, x1, x2: integer): boolean;
 
+    function getPh3Brick4096RLFBCentDepth(x, y: integer): integer;
+    function getPh3Brick702RLFBCentDepth(x, y: integer): integer;
+
+    function MakePh3PlusCross(x, maxMoves: integer): boolean;
+    procedure SearchPh3PlusCross(idxU, idxR, idxF, togo: integer);
+
+    function MakePh3Cent(x, y, maxMoves: integer): boolean;
+    procedure SearchPh3Cent(br, cx, cy, cux, cuy, d, togo: integer);
+
+    // alternatively
+    function Ph3Brick702Coord(x: integer): integer;
+    function InvPh3Brick702Coord(br, x: integer): integer;
+    function MakePh3Cent702(x, y, maxMoves: integer): boolean;
+    procedure SearchPh3Cent702(bx, by, cx, cy, dx,dy, togo: integer);
 
     //unused
 
@@ -125,7 +139,7 @@ type
 
 implementation
 
-uses Windows, main, Forms, phase1_tables, phase2_tables;
+uses Windows, main, Forms, phase1_tables, phase2_tables, phase3_tables;
 // Wendet die Symmetrie mit dem Index 0..15 auf Cluster(x,y) an
 // idx = 8*LR2 + 4*F2 + U4
 procedure faceletCube.applySymmetryByIndex(x, y, idx: integer);
@@ -249,7 +263,8 @@ begin
       faceCols[Ord(B), size - 1 - y, x] := faceCols[Ord(L), x, y];
       faceCols[Ord(L), x, y] := tmp;
 
-      if (y=x)and (size-1=2*x) then exit;
+      if (y = x) and (size - 1 = 2 * x) then
+        exit;
 
       tmp := faceCols[Ord(U), y, size - 1 - x];
       faceCols[Ord(U), y, size - 1 - x] := faceCols[Ord(F), x, y];
@@ -293,7 +308,8 @@ begin
       faceCols[Ord(R), x, y] := faceCols[Ord(L), size - 1 - x, size - 1 - y];
       faceCols[Ord(L), size - 1 - x, size - 1 - y] := tmp;
 
-      if (y=x)and (size-1=2*x) then exit;//center facelets for odd cubes
+      if (y = x) and (size - 1 = 2 * x) then
+        exit;//center facelets for odd cubes
 
       tmp := faceCols[Ord(U), y, size - 1 - x];
       faceCols[Ord(U), y, size - 1 - x] := faceCols[Ord(D), size - 1 - y, x];
@@ -363,7 +379,8 @@ begin
       faceCols[Ord(R), x, y] := faceCols[Ord(B), x, y];
       faceCols[Ord(B), x, y] := faceCols[Ord(L), x, y];
       faceCols[Ord(L), x, y] := tmp;
-      if (y=x)and (size-1=2*x) then exit;//center facelets for odd cubes
+      if (y = x) and (size - 1 = 2 * x) then
+        exit;//center facelets for odd cubes
 
       tmp := faceCols[Ord(F), y, size - 1 - x];
       faceCols[Ord(F), y, size - 1 - x] := faceCols[Ord(R), y, size - 1 - x];
@@ -418,7 +435,8 @@ begin
       faceCols[Ord(L), x, y] := faceCols[Ord(R), x, size - 1 - y];
       faceCols[Ord(R), x, size - 1 - y] := tmp;
 
-       if (y=x)and (size-1=2*x) then exit;//center facelets for odd cubes
+      if (y = x) and (size - 1 = 2 * x) then
+        exit;//center facelets for odd cubes
 
       tmp := faceCols[Ord(L), y, size - 1 - x];
       faceCols[Ord(L), y, size - 1 - x] := faceCols[Ord(R), y, x];
@@ -873,11 +891,12 @@ begin
 end;
 
 //set the solved position for a cluster
-procedure faceletcube.initCluster(x,y:Integer);
-var i:Integer;
+procedure faceletcube.initCluster(x, y: integer);
+var
+  i: integer;
 begin
-  for i:= 0 to 23 do
-   setClusterColorIndex(x, y, i, ColorIndex(i div 4 ));
+  for i := 0 to 23 do
+    setClusterColorIndex(x, y, i, ColorIndex(i div 4));
 end;
 
 
@@ -2038,9 +2057,9 @@ begin
     Exit(NoMove);
   if idx = 0 then
   begin
-      while not Phase3Allowed[Ord(Succ(currMove))] do
-        Inc(currMove);
-      Exit(Succ(currMove));
+    while not Phase3Allowed[Ord(Succ(currMove))] do
+      Inc(currMove);
+    Exit(Succ(currMove));
   end
   else
   begin
@@ -2072,6 +2091,11 @@ begin
       end;
 
       //Ord(pm) >= Ord(xU1), previous move is slice move
+
+      if (Ord(pm) div 18 = Ord(currmove) div 18) and  (Ord(currMove) <= Ord(pm)) then continue;
+      // all x-slice moves commute for  (x,y)-orbit with x<>y
+      // all y-slice moves commute for  (x,y)-orbit with x<>y
+
       if (Ord(pm) div 6) mod 3 <> (Ord(currMove) div 6) mod 3 then
         Exit(currMove);
       // pm and currMove are on different axes and hence do not commute
@@ -2095,36 +2119,52 @@ begin
     end;
   end;
 end;
- function faceletCube.Phase3RLFBCenterCoord(x, y: Integer): UInt16;
- //0<=cc<B_8_4^2
- begin
-   Result:= 70*Phase3CenterCoord(x,y,R)+Phase3CenterCoord(x,y,F)
- end;
 
- procedure faceletCube.InvPhase3RLFBCenterCoord(cc, x, y: Integer);
-  begin
-    InvPhase3CenterCoord(cc mod 70, x,y, F);
-    InvPhase3CenterCoord(cc div 70, x,y, R);
-  end;
+function faceletCube.Phase3RLFBCenterCoord(x, y: integer): UInt16;
+  //0<=cc<B_8_4^2
+begin
+  Result := 70 * Phase3CenterCoord(x, y, R) + Phase3CenterCoord(x, y, F);
+end;
+
+procedure faceletCube.InvPhase3RLFBCenterCoord(cc, x, y: integer);
+begin
+  InvPhase3CenterCoord(cc mod 70, x, y, F);
+  InvPhase3CenterCoord(cc div 70, x, y, R);
+end;
+
+
+function faceletcube.Ph3Brick702Coord(x: integer): integer;
+  //0<=bc<B_8_4^2
+begin
+  Result := B_8_4 * Phase3CenterCoord(x, size div 2, R) +
+    Phase3CenterCoord(x, size div 2, F);
+end;
+
+function faceletcube.InvPh3Brick702Coord(br, x: integer): integer;
+
+begin
+  InvPhase3CenterCoord(br div B_8_4, x, size div 2, R);
+  InvPhase3CenterCoord(br mod B_8_4, x, size div 2, F);
+end;
 
 
 
 // in phase 3 a (x,y) cluster separates into 3 subclusters of size 8
 //one for each direction of the cube
-function faceletCube.Phase3CenterCoord(x, y: Integer; a: Axis): Integer;
+function faceletCube.Phase3CenterCoord(x, y: integer; a: Axis): integer;
 var
-  occupied: array [0 .. 7] of Boolean;
-  c,centc: ColorIndex;
-  i, s, k, n: Integer;
+  occupied: array [0 .. 7] of boolean;
+  c, centc: ColorIndex;
+  i, s, k, n: integer;
 begin
-  centc:= faceCols[Ord(a),size div 2, size div 2]; //center color
+  centc := faceCols[Ord(a), size div 2, size div 2]; //center color
   for i := 0 to 7 do
   begin
-    c := clusterColorIndex(x, y, i + 4 * Ord(a)); //
+    c := clusterColorIndex(x, y, i + 4 * Ord(a));
     if c = centc then
-      occupied[i] := true
+      occupied[i] := True
     else
-      occupied[i] := false;
+      occupied[i] := False;
   end;
 
   s := 0;
@@ -2138,19 +2178,19 @@ begin
       s := s + Cnk(n, k);
     Dec(n);
   end;
-  result := 69 - s; // ID soll 0 sein
+  Result := 69 - s; // ID soll 0 sein
 end;
 
 //axis 0,2,4 are used
-procedure faceletCube.InvPhase3CenterCoord(cc, x, y: Integer; a: Axis);
+procedure faceletCube.InvPhase3CenterCoord(cc, x, y: integer; a: Axis);
 var
-  n, k, v, c: Integer;
-  occupied: array [0 .. 7] of Boolean;
+  n, k, v, c: integer;
+  occupied: array [0 .. 7] of boolean;
   col, setCol: ColorIndex;
 begin
   cc := 69 - cc;
   for n := 0 to 7 do
-    occupied[n] := false;
+    occupied[n] := False;
   n := 7;
   k := 3;
   while k >= 0 do
@@ -2159,7 +2199,7 @@ begin
     if cc < v then
     begin
       Dec(k);
-      occupied[n] := true;
+      occupied[n] := True;
     end
     else
       Dec(cc, v);
@@ -2167,7 +2207,7 @@ begin
   end;
 
   n := 0;
-  setCol := faceCols[Ord(a),size div 2, size div 2]; //center color
+  setCol := faceCols[Ord(a), size div 2, size div 2]; //center color
   for c := 0 to 7 do
     if occupied[c] then
     begin
@@ -2176,160 +2216,701 @@ begin
       begin
         k := 0;
         while (clusterColorIndex(x, y, k + 4 * Ord(a)) <> setCol) or
-          (occupied[k] and (k < c) (* do not change already set colors *) ) do
+          (occupied[k] and (k < c) (* do not change already set colors *)) do
           Inc(k);
         setClusterColorIndex(x, y, c + 4 * Ord(a), setCol);
         setClusterColorIndex(x, y, k + 4 * Ord(a), col);
       end;
       Inc(n);
       if n = 4 then
-        setCol := faceCols[Ord(a)+1,size div 2, size div 2]; //opposite center color
+        setCol := faceCols[Ord(a) + 1, size div 2, size div 2]; //opposite center color
     end;
 end;
 
-function faceletcube.badBrick(p,x1,x2:Integer):Boolean;
-var c1,c2:Integer;
+function faceletcube.badBrick(p, x1, x2: integer): boolean;
+var
+  c1, c2: integer;
 begin
-  c1:= Ord(clusterColorIndex(p,size div 2,x1));
-  c2:=Ord(clusterColorIndex(p,size div 2,x2));
-  Result:= Abs(c1-c2)<>1;
+  c1 := Ord(clusterColorIndex(p, size div 2, x1));
+  c2 := Ord(clusterColorIndex(p, size div 2, x2));
+  Result := Abs(c1 - c2) <> 1;
 end;
 
-function faceletcube.Phase3Brick4096Coord(x, y: Integer): Integer;
-var s2,r: Integer;
-  fc,rc:ColorIndex;
+function faceletcube.Phase3Brick4096Coord(x, y: integer): integer;
+var
+  s2, r: integer;
+  fc, rc: ColorIndex;
 begin
   //return -1 for invalid configurations
-  if badBrick(x,8,12) or badBrick(x,9,15) or badBrick(x,10,14) or badBrick(x,11,13) then exit(-1);
-  if badBrick(x,16,20) or badBrick(x,17,23) or badBrick(x,18,22) or badBrick(x,19,21) then exit(-1);
-  if badBrick(y,8,12) or badBrick(y,9,15) or badBrick(y,10,14) or badBrick(y,11,13) then exit(-1);
-  if badBrick(y,16,20) or badBrick(y,17,23) or badBrick(y,18,22) or badBrick(y,19,21) then exit(-1);
+  if badBrick(x, 0, 6) or badBrick(x, 1, 5) or badBrick(x, 2, 4) or
+    badBrick(x, 3, 7) then
+    exit(-1);
+  if badBrick(x, 8, 12) or badBrick(x, 9, 15) or badBrick(x, 10, 14) or
+    badBrick(x, 11, 13) then
+    exit(-1);
+  if badBrick(x, 16, 20) or badBrick(x, 17, 23) or badBrick(x, 18, 22) or
+    badBrick(x, 19, 21) then
+    exit(-1);
+  if badBrick(y, 0, 6) or badBrick(y, 1, 5) or badBrick(y, 2, 4) or
+    badBrick(y, 3, 7) then
+    exit(-1);
+  if badBrick(y, 8, 12) or badBrick(y, 9, 15) or badBrick(y, 10, 14) or
+    badBrick(y, 11, 13) then
+    exit(-1);
+  if badBrick(y, 16, 20) or badBrick(y, 17, 23) or badBrick(y, 18, 22) or
+    badBrick(y, 19, 21) then
+    exit(-1);
 
 
-  rc:= faceCols[Ord(cubedefs.R), size div 2, size div 2];
-  fc:= faceCols[Ord(F), size div 2, size div 2];
-  r:=0;
-  s2:= size div 2;
-  if clusterColorIndex(x,s2,9)<>rc then Inc(r); //center cluster
-  r:= r*2;
-  if clusterColorIndex(x,s2,17)<>fc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(x,s2,11)<>rc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(x,s2,19)<>fc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(x,s2,8)<>rc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(x,s2,10)<>rc then Inc(r);
-  r:=r*2;
+  rc := faceCols[Ord(cubedefs.R), size div 2, size div 2];
+  fc := faceCols[Ord(F), size div 2, size div 2];
+  r := 0;
+  s2 := size div 2;
+  if clusterColorIndex(x, s2, 9) <> rc then
+    Inc(r); //center cluster
+  r := r * 2;
+  if clusterColorIndex(x, s2, 17) <> fc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(x, s2, 11) <> rc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(x, s2, 19) <> fc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(x, s2, 8) <> rc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(x, s2, 10) <> rc then
+    Inc(r);
+  r := r * 2;
 
-  if clusterColorIndex(y,s2,9)<>rc then Inc(r); //center cluster
-  r:= r*2;
-  if clusterColorIndex(y,s2,17)<>fc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(y,s2,11)<>rc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(y,s2,19)<>fc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(y,s2,8)<>rc then Inc(r);
-  r:=r*2;
-  if clusterColorIndex(y,s2,10)<>rc then Inc(r);
-  Result:=r;
+  if clusterColorIndex(y, s2, 9) <> rc then
+    Inc(r); //center cluster
+  r := r * 2;
+  if clusterColorIndex(y, s2, 17) <> fc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(y, s2, 11) <> rc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(y, s2, 19) <> fc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(y, s2, 8) <> rc then
+    Inc(r);
+  r := r * 2;
+  if clusterColorIndex(y, s2, 10) <> rc then
+    Inc(r);
+  Result := r;
 end;
 
-procedure faceletcube.InvPhase3Brick4096Coord(b,x, y: Integer);
-var s2, i: Integer;
+procedure faceletcube.InvPhase3Brick4096Coord(b, x, y: integer);
+var
+  s2, i: integer;
 begin
-  s2:= size div 2;
-  hcube.initCluster(2,5);//helper cube with x=2 and y=3 and size=11
-   hcube.initCluster(3,5);
+  s2 := size div 2;
+  hcube.initCluster(2, 5);//helper cube with x=2 and y=3 and size=11
+  hcube.initCluster(3, 5);
   if Odd(b) then //10
   begin
-    hcube.move(D,3);
-    hcube.move(D,3);
+    hcube.move(D, 3);
+    hcube.move(D, 3);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then  //8
   begin
-    hcube.move(U,3);
-    hcube.move(U,3);
+    hcube.move(U, 3);
+    hcube.move(U, 3);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then
   begin
-    hcube.move(L,3); //3
-    hcube.move(L,3);
+    hcube.move(L, 3); //3
+    hcube.move(L, 3);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then //2
   begin
-    hcube.move(F,3);
-    hcube.move(F,3);
+    hcube.move(F, 3);
+    hcube.move(F, 3);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then  //1
   begin
-    hcube.move(R,3);
-    hcube.move(R,3);
+    hcube.move(R, 3);
+    hcube.move(R, 3);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then
   begin
-    hcube.move(cubedefs.B,3); //0
-    hcube.move(cubedefs.B,3);
+    hcube.move(cubedefs.B, 3); //0
+    hcube.move(cubedefs.B, 3);
   end;
-  b:=b div 2;
+  b := b div 2;
 
   if Odd(b) then //10
   begin
-    hcube.move(D,2);
-    hcube.move(D,2);
+    hcube.move(D, 2);
+    hcube.move(D, 2);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then  //8
   begin
-    hcube.move(U,2);
-    hcube.move(U,2);
+    hcube.move(U, 2);
+    hcube.move(U, 2);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then
   begin
-    hcube.move(L,2); //3
-    hcube.move(L,2);
+    hcube.move(L, 2); //3
+    hcube.move(L, 2);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then //2
   begin
-    hcube.move(F,2);
-    hcube.move(F,2);
+    hcube.move(F, 2);
+    hcube.move(F, 2);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then  //1
   begin
-    hcube.move(R,2);
-    hcube.move(R,2);
+    hcube.move(R, 2);
+    hcube.move(R, 2);
   end;
-  b:=b div 2;
+  b := b div 2;
   if Odd(b) then
   begin
-    hcube.move(cubedefs.B,2); //0
-    hcube.move(cubedefs.B,2);
+    hcube.move(cubedefs.B, 2); //0
+    hcube.move(cubedefs.B, 2);
   end;
 
-  for i:= 0 to 23 do
+  for i := 0 to 23 do
   begin
-    setClusterColorIndex(x,s2,i,hcube.clusterColorIndex(2,5,i));
-    setClusterColorIndex(y,s2,i,hcube.clusterColorIndex(3,5,i));
+    setClusterColorIndex(x, s2, i, hcube.clusterColorIndex(2, 5, i));
+    setClusterColorIndex(y, s2, i, hcube.clusterColorIndex(3, 5, i));
     //hcube has size 11, 11 div 2 = 5
   end;
 end;
 
-  // for a := U to B do
+
+function faceletCube.getPh3Brick4096RLFBCentDepth(x, y: integer): integer;
+var
+  i, br, b_class, b_sym, b1, b1_class, b1_sym, cx, cy, cx1, cy1, cxt,
+  cyt, depth_mod3: integer;
+  m: Moves;
+begin
+  br := Phase3Brick4096Coord(x, y);
+  b_class := Ph3Brick4096CoordToSymCoord[br].c_idx;
+  b_sym := Ph3Brick4096CoordToSymCoord[br].sym;
+  i := 0;//find one of the bitwise coded symmetries
+  while (b_sym and (1 shl i)) = 0 do
+    Inc(i);
+  b_sym := i;
+
+  cx := Phase3RLFBCenterCoord(x, y);
+  cy := Phase3RLFBCenterCoord(y, x);
+
+  cx1 := Ph3RLFBCentCoordSymTransform[cx, b_sym];
+  cy1 := Ph3RLFBCentCoordSymTransform[cy, b_sym];
+  depth_mod3 := get_bc_depth3(b_class, 4900 * cx1 + cy1);
+
+
+  Result := 0;
+  while (br <> 0) or (cx <> 0) or (cy <> 0) do
+  begin
+    if depth_mod3 = 0 then
+      depth_mod3 := 3;
+
+    for m := fU1 to yB3 do
+    begin
+      if not Phase3Allowed[Ord(m)] then
+        continue;
+      case m of
+        fU1..fB3:
+        begin
+          if not Ph3faceMoveAllowed[br, Ord(m)] then
+            continue;
+          b1 := Ph3Brick4096Move[br, Ord(m)];
+          cx1 := Phase3RLFBCenterMove[cx, Ord(m)];
+          cy1 := Phase3RLFBCenterMove[cy, Ord(m)];
+        end;
+        xU1..xB3:
+        begin
+          b1 := Ph3Brick4096Move[br, Ord(m)];
+          cx1 := Phase3RLFBCenterMove[cx, Ord(m)];
+          cy1 := Phase3RLFBCenterMove[cy, Ord(m) + 18];
+        end;
+        yU1..yB3:
+        begin
+          b1 := Ph3Brick4096Move[br, Ord(m)];
+          cx1 := Phase3RLFBCenterMove[cx, Ord(m)];
+          cy1 := Phase3RLFBCenterMove[cy, Ord(m) - 18];
+        end;
+      end;
+
+
+      b1_class := Ph3Brick4096CoordToSymCoord[b1].c_idx;
+      b1_sym := Ph3Brick4096CoordToSymCoord[b1].sym;
+      i := 0;//find one bitwise coded symmetry
+      while (b1_sym and (1 shl i)) = 0 do
+        Inc(i);
+      b1_sym := i;
+
+      cxt := Ph3RLFBCentCoordSymTransform[cx1, b1_sym];
+      cyt := Ph3RLFBCentCoordSymTransform[cy1, b1_sym];
+      if get_bc_depth3(b1_class, 4900 * cxt + cyt) = depth_mod3 - 1 then
+      begin
+        // Form1.Memo1.Lines.Add(Format('%s', [MoveStrings[m]]));
+        Inc(Result);
+        br := b1;
+        cx := cx1;
+        cy := cy1;
+        Dec(depth_mod3);
+        break;
+      end;
+    end;
+  end;
+end;
+
+
+function faceletCube.getPh3Brick702RLFBCentDepth(x, y: integer): integer;
+var
+  i, bx, bx_class, bx_sym, bx1, bx1_class, bx1_sym, by, by1, byt, cx,
+  cx1, cxt, depth_mod3: integer;
+  m: Moves;
+begin
+  bx := Ph3Brick702Coord(x);
+  bx_class := Ph3Brick702CoordToSymCoord[bx].c_idx;
+  bx_sym := Ph3Brick702CoordToSymCoord[bx].sym;
+  i := 0;//find one of the bitwise coded symmetries
+  while (bx_sym and (1 shl i)) = 0 do
+    Inc(i);
+  bx_sym := i;
+
+  by := Ph3Brick702Coord(y);
+  cx := Phase3RLFBCenterCoord(x, y);
+
+  by1 := Ph3RLFBCentCoordSymTransform[by, bx_sym];
+  cx1 := Ph3RLFBCentCoordSymTransform[cx, bx_sym];
+  depth_mod3 := get_bycx_depth3(bx_class, 4900 * by1 + cx1);
+
+
+  Result := 0;
+  while (bx <> 0) or (by <> 0) or (cx <> 0) do
+  begin
+    if depth_mod3 = 0 then
+      depth_mod3 := 3;
+
+    for m := fU1 to yB3 do
+    begin
+      if not Phase3Allowed[Ord(m)] then
+        continue;
+      case m of
+        fU1..fB3:
+        begin
+          bx1 := Phase3RLFBCenterMove[bx, Ord(m)];
+          cx1 := Phase3RLFBCenterMove[cx, Ord(m)];
+          by1 := Phase3RLFBCenterMove[by, Ord(m)];
+        end;
+        xU1..xB3:
+        begin
+          bx1 := Phase3RLFBCenterMove[bx, Ord(m)];
+          cx1 := Phase3RLFBCenterMove[cx, Ord(m)];
+          by1 := by;// x moves move only x bricks
+        end;
+        yU1..yB3:
+        begin
+          bx1 := bx;// y moves move only y bricks
+          cx1 := Phase3RLFBCenterMove[cx, Ord(m)];
+          by1 := Phase3RLFBCenterMove[by, Ord(m) - 18];
+        end;
+      end;
+
+
+      bx1_class := Ph3Brick702CoordToSymCoord[bx1].c_idx;
+      bx1_sym := Ph3Brick702CoordToSymCoord[bx1].sym;
+      i := 0;//find one bitwise coded symmetry
+      while (bx1_sym and (1 shl i)) = 0 do
+        Inc(i);
+      bx1_sym := i;
+
+      byt := Ph3RLFBCentCoordSymTransform[by1, bx1_sym];
+      cxt := Ph3RLFBCentCoordSymTransform[cx1, bx1_sym];
+      if get_bycx_depth3(bx1_class, 4900 * byt + cxt) = depth_mod3 - 1 then
+      begin
+        //Form1.Memo1.Lines.Add(Format('%s', [MoveStrings[m]]));
+        ///////////////////////////////////////////////////
+        Inc(Result);
+        bx := bx1;
+        cx := cx1;
+        by := by1;
+        Dec(depth_mod3);
+        break;
+      end;
+    end;
+  end;
+end;
+
+
+function faceletCube.MakePh3PlusCross(x, maxMoves: integer): boolean;
+var
+  idx, togo: integer;
+  nU, nR, nF: UInt32;
+begin
+  togo := 0;
+  found := False;
+  for idx := Low(fxymoves) to High(fxymoves) do
+    fxymoves[idx] := InitMove;
+  while found = False do
+  begin
+    if togo > maxMoves then
+      Exit(False);
+    mvIdx := 0; // 1.freier Platz in fxymoves
+
+    nU := Phase3CenterCoord(x, size div 2, U);
+    nR := Phase3CenterCoord(x, size div 2, R);
+    nF := Phase3CenterCoord(x, size div 2, F);
+    SearchPh3PlusCross(nU, nR, nF, togo);
+    Inc(togo);
+  end;
+  Result := True;
+end;
+
+procedure faceletCube.SearchPh3PlusCross(idxU, idxR, idxF, togo: integer);
+var
+  mv: moves;
+  newIdxU, newIdxR, newIdxF: integer;
+begin
+  if (Ph3PlusCrossPrun[B_8_4 * (B_8_4 * idxU + idxR) + idxF] > togo) then
+    Exit;
+  if togo = 0 then
+  begin
+    found := True;
+  end
+  else
+  begin
+    mv := InitMove;
+    while True do
+    begin
+      mv := Succ(mv);
+      while not Phase3Allowed[Ord(mv)] do
+        mv := Succ(mv);
+      if mv = NoMove then // works since  Phase3Allowed[noMove]=true
+      begin
+        Exit;
+      end
+      else
+      begin
+        if mv < yU1 then
+        begin
+          newIdxU := Phase3CenterMove[0, idxU, Ord(mv)];
+          newIdxR := Phase3CenterMove[1, idxR, Ord(mv)];
+          newIdxF := Phase3CenterMove[2, idxF, Ord(mv)];
+        end
+        else
+          continue; // no y-moves
+
+        fxymoves[mvIdx] := mv;
+        Inc(mvIdx);
+        SearchPh3PlusCross(newIdxU, newIdxR, newIdxF, togo - 1);
+
+        if found then
+          // return without changing mvIdx
+          Exit;
+        Dec(mvIdx);
+      end;
+    end;
+
+  end;
+end;
+
+
+
+function faceletCube.MakePh3Cent(x, y, maxMoves: integer): boolean;
+var
+  idx, togo, d: integer;
+begin
+  found := False;
+  for idx := Low(fxymoves) to High(fxymoves) do
+    fxymoves[idx] := InitMove;
+
+  d := getPh3Brick4096RLFBCentDepth(x, y);
+  togo := d;
+  while found = False do
+  begin
+    if togo > maxMoves then
+      Exit(False);
+    mvIdx := 0; // 1. empty place in  fxymoves
+    Form1.Memo1.Lines.Add(Format('Searching depth %d...', [togo]));
+
+    SearchPh3Cent(Phase3Brick4096Coord(x, y), Phase3RLFBCenterCoord(x, y),
+      Phase3RLFBCenterCoord(y, x), Phase3CenterCoord(x, y, U),
+      Phase3CenterCoord(y, x, U), d, togo);
+    Inc(togo);
+  end;
+  if found then
+  begin
+    Result := True;
+
+  end
+  else
+    Result := False;
+end;
+
+
+//restores centers of orbits(x,y) and (y,x).
+procedure faceletCube.SearchPh3Cent(br, cx, cy, cux, cuy, d, togo: integer);
+var
+  mv: moves;
+  //sc1: SymCoord32;
+  //syms: UInt8;
+  //i, bx_class, bx_sym, by_class, by_sym, altcx, altcy, altby,
+  //bxcx_distmod3, bycy_distmod3, bxby_distmod3, bxcx_dist1, bycy_dist1,
+  //bxby_dist1: integer;
+  //bx1, by1, cx1, cy1: integer;
+  br1: UInt16;
+  cx1, cy1, cxt, cyt, cux1, cuy1, br1_class, br1_sym, i, bc_distmod3, d1: integer;
+
+begin
+  Application.ProcessMessages;
+  //Form1.Memo1.Lines.Add(Format('bx: %d, togo: %d, mvidx: %d', [bx, togo, mvidx]));
+  //printmoves(1,2);
+  if stopProgram then
+    exit;
+
+  if (togo = 0) and (cux = 0) and (cuy = 0) then
+  begin
+    found := True;
+  end
+  else
+  begin
+    mv := InitMove;
+    while True do
+    begin
+      if mvIdx = 0 then
+        mv := nextMovePhase3Arr[NoMove, mv]
+      else
+        mv := nextMovePhase3Arr[fxymoves[mvIdx - 1], mv];
+
+      if mv = NoMove then
+      begin
+        Exit;
+      end
+      else
+      begin
+
+        case mv of
+          fU1..fB3:
+          begin//face moves move x-bricks and (x,y)-orbit centers
+            if not Ph3faceMoveAllowed[br, Ord(mv)] then
+              continue;
+            br1 := Ph3Brick4096Move[br, Ord(mv)];
+            cx1 := Phase3RLFBCenterMove[cx, Ord(mv)];
+            cy1 := Phase3RLFBCenterMove[cy, Ord(mv)];
+            cux1 := Phase3CenterMove[0, cux, Ord(mv)];
+            cuy1 := Phase3CenterMove[0, cuy, Ord(mv)];
+          end;
+          xU1..xB3:
+          begin
+            br1 := Ph3Brick4096Move[br, Ord(mv)];
+            cx1 := Phase3RLFBCenterMove[cx, Ord(mv)];
+            cy1 := Phase3RLFBCenterMove[cy, Ord(mv) + 18];
+            cux1 := Phase3CenterMove[0, cux, Ord(mv)];
+            cuy1 := Phase3CenterMove[0, cuy, Ord(mv) + 18];
+          end;
+          yU1..yB3:
+          begin
+            br1 := Ph3Brick4096Move[br, Ord(mv)];
+            cx1 := Phase3RLFBCenterMove[cx, Ord(mv)];
+            cy1 := Phase3RLFBCenterMove[cy, Ord(mv) - 18];
+            cux1 := Phase3CenterMove[0, cux, Ord(mv)];
+            cuy1 := Phase3CenterMove[0, cuy, Ord(mv) - 18];
+          end;
+        end;
+
+
+        br1_class := Ph3Brick4096CoordToSymCoord[br1].c_idx;
+        br1_sym := Ph3Brick4096CoordToSymCoord[br1].sym;
+        i := 0;//find one bitwise coded symmetry
+        while (br1_sym and (1 shl i)) = 0 do
+          Inc(i);
+        br1_sym := i;
+        cxt := Ph3RLFBCentCoordSymTransform[cx1, br1_sym];
+        cyt := Ph3RLFBCentCoordSymTransform[cy1, br1_sym];
+        bc_distmod3 := get_bc_depth3(br1_class, 4900 * cxt + cyt);
+        d1 := distance[3 * d + bc_distmod3];
+        if d1 >= togo then
+          continue;
+
+        fxymoves[mvIdx] := mv;
+        Inc(mvIdx);
+        SearchPh3Cent(br1, cx1, cy1, cux1, cuy1, d1, togo - 1);
+
+        if found then
+          // kehre zurück, ohne mvIdx zu verändern
+          Exit;
+        Dec(mvIdx);
+      end;
+    end;
+
+  end;
+
+end;
+
+
+function faceletCube.MakePh3Cent702(x, y, maxMoves: integer): boolean;
+var
+  idx, togo, dx,dy: integer;
+  i: integer;
+begin
+  found := False;
+  for idx := Low(fxymoves) to High(fxymoves) do
+    fxymoves[idx] := InitMove;
+
+  dx := getPh3Brick702RLFBCentDepth(x, y);
+  dy := getPh3Brick702RLFBCentDepth(y, x);
+  togo := Max(dx,dy);
+  while found = False do
+  begin
+    if togo > maxMoves then
+      Exit(False);
+    mvIdx := 0; // 1. empty place in  fxymoves
+    //Form1.Memo1.Lines.Add(Format('Searching depth %d...', [togo]));
+
+    SearchPh3Cent702(Ph3Brick702Coord(x), Ph3Brick702Coord(y),
+      Phase3RLFBCenterCoord(x, y), Phase3RLFBCenterCoord(y, x), dx,dy, togo);
+    Inc(togo);
+  end;
+  if found then
+  begin
+    Result := True;
+
+  end
+  else
+    Result := False;
+end;
+
+procedure faceletCube.SearchPh3Cent702(bx, by, cx, cy, dx, dy,togo: integer);
+var
+  mv: moves;
+  bx1, by1,bxt, byt, bx1_class, bx1_sym,by1_class, by1_sym: UInt16;
+  cx1, cy1, cxt, cyt, dx1,dy1, i, bycx_distmod3,bxcy_distmod3: integer;
+
+begin
+  Application.ProcessMessages;
+  //Form1.Memo1.Lines.Add(Format('bx: %d, togo: %d, mvidx: %d', [bx, togo, mvidx]));
+  //printmoves(1,2);
+  if stopProgram then
+    exit;
+
+  //if (togo = 0) then
   //begin
-  //  c := ColorIndex(Ord(a));
-  //  for i := 0 to size - 1 do
-  //    for j := 0 to size - 1 do
-  //      faceCols[Ord(a), i, j] := c;
+  //  Form1.Memo1.Lines.Add(Format('cy: %d', [cy]));
+  //  printmoves(0, 1);
+  //end;
+
+  if (togo = 0) then //and (cy = 0) then
+  begin
+    found := True;
+  end
+  else
+  begin
+    mv := initmove;//we do not use fU1..fD3 moves      { TODO : das unbedingt testen }
+    while True do
+    begin
+      if mvIdx = 0 then
+        mv := nextMovePhase3Arr[NoMove, mv]
+      else
+        mv := nextMovePhase3Arr[fxymoves[mvIdx - 1], mv];
+
+      if mv <fR1 then continue; //No U or D moves necessary
+
+      if mv = NoMove then
+      begin
+        Exit;
+      end
+      else
+      begin
+
+        case mv of
+          fU1..fB3:
+          begin
+            bx1 := Phase3RLFBCenterMove[bx, Ord(mv)];
+            cx1 := Phase3RLFBCenterMove[cx, Ord(mv)];
+            by1 := Phase3RLFBCenterMove[by, Ord(mv)];
+            cy1 := Phase3RLFBCenterMove[cy, Ord(mv)];
+          end;
+          xU1..xB3:
+          begin
+            bx1 := Phase3RLFBCenterMove[bx, Ord(mv)];
+            cx1 := Phase3RLFBCenterMove[cx, Ord(mv)];
+            by1 := by;// x moves move only x bricks
+            cy1 := Phase3RLFBCenterMove[cy, Ord(mv) + 18];
+          end;
+          yU1..yB3:
+          begin
+            bx1 := bx;// y moves move only y bricks
+            cx1 := Phase3RLFBCenterMove[cx, Ord(mv)];
+            by1 := Phase3RLFBCenterMove[by, Ord(mv) - 18];
+            cy1 := Phase3RLFBCenterMove[cy, Ord(mv) - 18];
+          end;
+        end;
+
+
+        bx1_class := Ph3Brick702CoordToSymCoord[bx1].c_idx;
+        bx1_sym := Ph3Brick702CoordToSymCoord[bx1].sym;
+        i := 0;//find one bitwise coded symmetry
+        while (bx1_sym and (1 shl i)) = 0 do
+          Inc(i);
+        bx1_sym := i;
+
+        byt := Ph3RLFBCentCoordSymTransform[by1, bx1_sym];
+        cxt := Ph3RLFBCentCoordSymTransform[cx1, bx1_sym];
+
+        bycx_distmod3 := get_bycx_depth3(bx1_class, 4900 * byt + cxt);
+        dx1 := distance[3 * dx + bycx_distmod3];
+        if dx1 >= togo then
+          continue;
+
+        by1_class := Ph3Brick702CoordToSymCoord[by1].c_idx;
+        by1_sym := Ph3Brick702CoordToSymCoord[by1].sym;
+        i := 0;//find one bitwise coded symmetry
+        while (by1_sym and (1 shl i)) = 0 do
+          Inc(i);
+        by1_sym := i;
+
+        bxt := Ph3RLFBCentCoordSymTransform[bx1, by1_sym];
+        cyt := Ph3RLFBCentCoordSymTransform[cy1, by1_sym];
+
+        bxcy_distmod3 := get_bycx_depth3(by1_class, 4900 * bxt + cyt);
+        dy1 := distance[3 * dy + bxcy_distmod3];
+        if dy1 >= togo then
+          continue;
+
+
+
+
+
+
+
+
+        fxymoves[mvIdx] := mv;
+        Inc(mvIdx);
+        SearchPh3Cent702(bx1, by1, cx1, cy1, dx1,dy1, togo - 1);
+
+        if found then
+          // kehre zurück, ohne mvIdx zu verändern
+          Exit;
+        Dec(mvIdx);
+      end;
+    end;
+
+  end;
+
+end;
+
+
 
 
 //function faceletCube.SearchUDCent(x, y, maxMoves: integer): boolean;

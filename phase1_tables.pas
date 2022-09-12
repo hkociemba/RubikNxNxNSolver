@@ -381,8 +381,8 @@ procedure createDistanceTable;
 var
   i, j: integer;
 begin
-  setLength(distance, 25 * 3);
-  for i := 0 to 24 do
+  setLength(distance, 50 * 3);
+  for i := 0 to 49 do
     for j := 0 to 2 do
     begin
       distance[3 * i + j] := (i div 3) * 3 + j;

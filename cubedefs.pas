@@ -71,8 +71,9 @@ const
   B_8_4 = 70; // Binomial(8,4)
   B_24_12 = 2704156;
   N_SYMCENTCOORD = 92247; // Anzahl der Äquivalenzklassen der UDCenterCoord
-  N_SYMBRICKCOORD= 46935; // Anzahl der Äquivalenzklassen der UDBrickCoord
-  N_SYMBRICK4096COORD= 640; // Number of equivalence classes of
+  N_SYMBRICKCOORD = 46935; // Anzahl der Äquivalenzklassen der UDBrickCoord
+  N_SYMBRICK4096COORD = 640; // Number of equivalence classes of Phase3Brick4096Coord
+  N_SYMBRICK702COORD =690; //Number of equivalence classes of Ph3Brick702Coord
 
   // wohin facelets bei  180 Drehungen, deren slice durch U,R,F gehen, abgebildet werden.
   oppositeU: array [0 .. 23] of Integer = (-1, -1, -1, -1, -1, -1, -1, -1, 14,
