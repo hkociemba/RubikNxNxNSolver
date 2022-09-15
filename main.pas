@@ -1,7 +1,8 @@
 unit main;
 //{$Define LOADPHASE1}
 //{$Define LOADPHASE2}
-{$Define LOADPHASE3}
+//{$Define LOADPHASE3}
+{$Define LOADPHASE4}
 
 {$mode objfpc}{$H+}
 
@@ -34,6 +35,7 @@ type
     Button1: TButton;
     BPhase1: TButton;
     BPhase3: TButton;
+    BPhase4: TButton;
     CheckWide: TCheckBox;
     CheckWide1: TCheckBox;
     ColorDialog: TColorDialog;
@@ -80,6 +82,7 @@ type
     procedure BEmptyClick(Sender: TObject);
     procedure BPhase1Click(Sender: TObject);
     procedure BPhase2Click(Sender: TObject);
+    procedure BPhase4Click(Sender: TObject);
     procedure BRandomClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure BPhase3Click(Sender: TObject);
@@ -114,7 +117,7 @@ var
   curFilename: string; //name of last loaded/saved file
   stopProgram: boolean; // flag for program abortion
   grandTotal: integer; // total number of moves for all phases
-  hcube:FaceletCube;//for different purposes
+  hcube: FaceletCube;//for different purposes
 
 implementation
 
@@ -123,7 +126,8 @@ implementation
 
 { TForm1 }
 
-uses LCLIntf (*RGB*), phase1_tables, phase2_tables,phase3_tables, UDThreaded;
+uses LCLIntf (*RGB*), phase1_tables, phase2_tables, phase3_tables, phase4_tables,
+  UDThreaded;
 
 procedure TForm1.MenuItem1Click(Sender: TObject);
 begin
@@ -612,7 +616,6 @@ begin
       fc.applyMoves(i, i);
     end;
   end;
-  Inc(depth);
   Inc(grandTotal, totalLength);
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('Number of moves in phase 2: ' + IntToStr(totalLength));
@@ -620,6 +623,54 @@ begin
   Application.ProcessMessages;
 
   exit;
+
+end;
+
+procedure TForm1.BPhase4Click(Sender: TObject);
+var
+  i, j, total, totalLength, depth: integer;
+  hasFound: boolean;
+  fc: FaceletCube;
+begin
+  fc := fcube;
+  totalLength := 0;
+  Memo1.Lines.Add('Phase 4 - U and D centers to their faces:');
+  Memo1.Lines.Add('');
+
+  Memo1.Lines.Add('+cross:');
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+    if Form1.fcube.MakePh4UDPlusCross(i, 25) then
+    begin
+      hasFound := True;
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, fc.size div 2);
+      fc.applyMoves(i, fc.size div 2);
+    end;
+  end;
+
+
+  Form1.Memo1.Lines.Add('');
+  Memo1.Lines.Add('cluster pairs:');
+
+  for i := 1 to fc.size div 2 - 2 do // size muss ungerade sein
+    for j := i + 1 to fc.size div 2 - 1 do
+    begin
+
+      if fcube.MakePh4UDCenters(i, j, 25) then
+      begin
+        Inc(totalLength, fcube.mvIdx);
+
+        fcube.printMoves(i, j);
+        fcube.applyMoves(i, j);
+      end;
+    end;
+
+  Inc(grandTotal, totalLength);
+  Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add('Number of moves in phase 4: ' + IntToStr(totalLength));
+  Form1.Memo1.Lines.Add('');
+  Application.ProcessMessages;
 
 end;
 
@@ -640,19 +691,19 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var
   i, j, cls, sm, repcoord, coordtrans: integer;
-  s: String;
+  s: string;
 begin
 
   //for i:=0 to 4900-1 do
   // for j:=0 to 36-1 do
   // begin
   //  sm:=Ph3Brick702Move[i,j];
-  //  cls:=Phase3RLFBCenterMove[i,j];
+  //  cls:=Ph3RLFBCenterMove[i,j];
   //  if sm<>cls then
   //    repcoord:=0;
   //  end;
-  //
-  //
+
+
   //for i:= 0 to 4900-1 do
   //begin
   //  fcube.InvPh3Brick702Coord(i,1);
@@ -660,36 +711,26 @@ begin
   //    j:=1;
   //end;
 
-  // Memo1.Lines.Add(Inttostr(fcube.Phase3Brick4096Coord(1,2)));
 
-  //Memo1.Lines.Add(Inttostr(fcube.getPh3Brick4096RLFBCentDepth(1,2)));
-  //for i:=0 to 4096 do
-  //begin
-  //  fcube.InvPhase3Brick4096Coord(i,1,2);
-  //  if fcube.Phase3Brick4096Coord(1,2)<>i then
-  //  j:=1;
-  //end;
-  //
-
-   Memo1.Lines.Add(Format('%d',[fcube.getPh3Brick702RLFBCentDepth(1,2)]));
+  Memo1.Lines.Add(Format('%d', [fcube.getPh3Brick702RLFBCentDepth(1, 2)]));
 
 
   //Inc(grandTotal);
   //Memo1.Lines.Add(IntToSTr(grandTotal));
-  //fcube.InvPhase3RLFBCenterCoord(3000, 1, 2);
+  //fcube.InvPh3RLFBCenterCoord(3000, 1, 2);
   //if odd(grandTotal) then
 
-   // fcube.applyInvSymmetryByIndex(1, 2, 1);
-   //fcube.applyInvSymmetryByIndex(3, 3, grandTotal div 2);
+  // fcube.applyInvSymmetryByIndex(1, 2, 1);
+  //fcube.applyInvSymmetryByIndex(3, 3, grandTotal div 2);
 
-   // fcube.applySymmetryByIndex(1, 2, 1);
-   //fcube.applySymmetryByIndex(3, 3, grandTotal div 2);
+  // fcube.applySymmetryByIndex(1, 2, 1);
+  //fcube.applySymmetryByIndex(3, 3, grandTotal div 2);
 
 
 
-   //fcube.applySymmetry(1, 3, S_LR2);
-   //fcube.applySymmetry(2, 3, S_LR2);
- //fcube.InvPhase3RLFBCenterCoord(grandTotal mod 4900,1,2);
+  //fcube.applySymmetry(1, 3, S_LR2);
+  //fcube.applySymmetry(2, 3, S_LR2);
+  //fcube.InvPh3RLFBCenterCoord(grandTotal mod 4900,1,2);
 
 
   PaintBoxFaces.Invalidate;
@@ -705,13 +746,13 @@ var
 begin
   fc := fcube;
   totalLength := 0;
-  Memo1.Lines.Add('Phase 3 - All centers to their faces:');
+  Memo1.Lines.Add('Phase 3 R,L,F and B centers to their faces:');
   Memo1.Lines.Add('');
 
   Memo1.Lines.Add('+cross:');
   for i := 1 to fc.size div 2 - 1 do
   begin
-    if Form1.fcube.MakePh3PlusCross(i, 25) then
+    if Form1.fcube.MakePh3RLFBPlusCross(i, 25) then
     begin
       hasFound := True;
       Inc(totalLength, fc.mvIdx);
@@ -735,23 +776,24 @@ begin
         fcube.applyMoves(i, j);
       end;
     end;
-    //ca. 25 Züge pro Doppelcluster
+  //about 17 moves for 16 centers
 
-  //Form1.Memo1.Lines.Add('');
-  //Memo1.Lines.Add('xcross:');
-  //
-  //
-  //for i := 1 to fc.size div 2 - 1 do
-  //begin
-  //
-  //  if fc.MakeFBXCross(i, depth) then
-  //  begin
-  //    Inc(totalLength, fc.mvIdx);
-  //    fc.printMoves(i, i);
-  //    fc.applyMoves(i, i);
-  //  end;
-  //end;
-  //Inc(depth);
+  Form1.Memo1.Lines.Add('');
+  Memo1.Lines.Add('xcross:');
+
+
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+
+    if fc.MakePh3XCross(i, 25) then
+    begin
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, i);
+      fc.applyMoves(i, i);
+    end;
+  end;
+
+
   Inc(grandTotal, totalLength);
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('Number of moves in phase 3: ' + IntToStr(totalLength));
@@ -776,9 +818,12 @@ begin
   ;
 {$ENDIF}
 {$IFDEF LOADPHASE3}
-  //createPh3Brick4096RLFBCentPruningTable;
   createPh3Brick702RLFBCentPruningTable;
   BPhase3.Enabled := True;
+{$ENDIF}
+{$IFDEF LOADPHASE4}
+
+  BPhase4.Enabled := True;
 {$ENDIF}
 end;
 
@@ -978,29 +1023,28 @@ begin
   BPhase2.Visible := True;
   BPhase2.Enabled := False;
   createNextMovePhase3Table;
-  createPhase3CenterMoveTable;
-  //createPhase3Brick4096MoveTable;
-  //createPh3Brick702MoveTable;
 
-  createPh3FaceMoveAllowedTable;
-  createPhase3RLFBCenterMoveTable; //important also for bricks
+  //createPh3CenterMoveTable;
+  createPh3RLFBCenterMoveTable; //important also for bricks
+  createPh3RLFBXCrossMoveTable;
 
-  //createPh3Brick4096CoordToSymCoordTable;
   createPh3Brick702CoordToSymCoordTable;
 
   createPh3RLFBCenterCoordSymTransTable;
-  createPh3PlusCrossPruningTable;
+  createPh3RLFBXCrossPruningTable;
+  createPh3RLFBPlusCrossPruningTable;
+
   createDistanceTable;
 
   //workcube.createPhase3OrthoSliceMoveTables(2, 4);
   //workcube.createPhase3XCrossMoveTables(2);
-  //
+
   //createPhase3PlusCrossPruningTable;
   //Setlength(Phase3FullCenterSlicePrun, 3, B_8_4 * B_8_4 * B_8_4 * B_8_4);
   //createPhase3FullCenterSliceCoordPruningTable(U);
   //createPhase3FullCenterSliceCoordPruningTable(R);
   //createPhase3FullCenterSliceCoordPruningTable(F);
-  //
+
   //Setlength(Phase3XCrossPrun, 3, B_8_4 * B_8_4 * 16);
   //createPhase3XCrossPruningTable(U);
   //createPhase3XCrossPruningTable(R);
@@ -1009,10 +1053,21 @@ begin
   //workcube.Free;
 {$ENDIF}
 {$IFDEF LOADPHASE4}
-  workcube := FaceletCube.Create(nil, 11);
-  createNextMovePhase2Table;
-  workcube.createEdge12_24MoveTable(2);
-  workcube.Free;
+
+  BPhase2.Visible := True;
+  BPhase2.Enabled := False;
+  createNextMovePhase4Table;
+  createPhase4RLFBBrickMoveTable;
+  createPhase4UDBrickMoveTable;
+  createPh4CenterMoveTable;
+  createPh4UDPlusCrossPruningTable;
+  createPh4UDCentBrickPruningTable;
+
+
+  //workcube := FaceletCube.Create(nil, 11);
+  //createNextMovePhase2Table;
+  //workcube.createEdge12_24MoveTable(2);
+  //workcube.Free;
 {$ENDIF}
 end;
 

@@ -155,7 +155,7 @@ var
   mv: moves;
   sc1: SymCoord32;
   syms: UInt8;
-  n, altccy, altslx, key: integer;
+  n, altccx,altccy, altslx, altsly, key: integer;
 
   newccx, newccy, newslx, newsly: integer;
   aa: integer;
@@ -164,9 +164,8 @@ begin
   if togo = 10 then
   begin
 
-    sc1 := UDCentCoordToSymCoord[ccx]; // Sym-Koordinate
+    sc1 := UDCentCoordToSymCoord[ccx];
     syms := sc1.sym;
-
     n := 0;
     while (syms and (1 shl n)) = 0 do
       Inc(n);
@@ -176,9 +175,25 @@ begin
 
     if UDStates10Table[key].used = 0 then
       Exit;
-
     if findLowerIndexUDStates10(key, altccy) <> -1 then
       exit;
+
+
+    sc1 := UDCentCoordToSymCoord[ccy]; //exchange x and y and apply once more
+    syms := sc1.sym;
+    n := 0;
+    while (syms and (1 shl n)) = 0 do
+      Inc(n);
+    altccx := UDCentCoordSymTransform[ccx, n];
+    altsly := UDBrick256CoordSymTransform[sly, n];
+    key := (sc1.c_idx shl 8) + altsly;
+
+    if UDStates10Table[key].used = 0 then
+      Exit;
+    if findLowerIndexUDStates10(key, altccx) <> -1 then
+      exit;
+
+
 
   end;
   { TODO : Reihenfolge untersuchen }

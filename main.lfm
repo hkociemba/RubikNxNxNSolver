@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 2277
+  Left = 2184
   Height = 845
-  Top = 395
+  Top = 475
   Width = 1183
   Caption = 'Form1'
   ClientHeight = 825
@@ -339,11 +339,21 @@ object Form1: TForm1
         Left = 472
         Height = 25
         Top = 680
-        Width = 75
+        Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 3'
         OnClick = BPhase3Click
         TabOrder = 15
+      end
+      object BPhase4: TButton
+        Left = 560
+        Height = 25
+        Top = 680
+        Width = 80
+        Anchors = [akRight, akBottom]
+        Caption = 'Solve Phase4'
+        OnClick = BPhase4Click
+        TabOrder = 16
       end
     end
     object TabSheet2: TTabSheet
