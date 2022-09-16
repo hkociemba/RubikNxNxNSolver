@@ -332,6 +332,7 @@ object Form1: TForm1
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 2'
+        Enabled = False
         OnClick = BPhase2Click
         TabOrder = 14
       end
@@ -342,6 +343,7 @@ object Form1: TForm1
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 3'
+        Enabled = False
         OnClick = BPhase3Click
         TabOrder = 15
       end
@@ -352,6 +354,7 @@ object Form1: TForm1
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase4'
+        Enabled = False
         OnClick = BPhase4Click
         TabOrder = 16
       end

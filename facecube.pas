@@ -102,6 +102,8 @@ type
     procedure SearchPh4UDPlusCross(c, b, togo: integer);
     function MakePh4UDCenters(x, y, maxMoves: integer): boolean;
     procedure SearchPh4UDCenter(cx, cy, bxy, bo, togo: integer);
+    function MakePh4XCross(x, maxMoves: integer): boolean;
+    procedure SearchPh4XCross(cx,b, bo, togo: integer);
 
     function Phase4RLFBBrickCoord(x, y: integer): integer;
     procedure InvPhase4RLFBBrickCoord(cc, x, y: integer);
@@ -2731,7 +2733,7 @@ end;
 
 
 function faceletCube.Phase4RLFBBrickCoord(x, y: integer): integer;
-  //0<=cc<256. if x-bricks are fixed 0<=cc<16
+  //0<=cc<256. if x-bricks are solved 0<=cc<16
 var
   i, m: integer;
   c: ColorIndex;
@@ -2951,7 +2953,94 @@ begin
 end;
 
 
+function faceletCube.MakePh4XCross(x,maxMoves: integer): boolean;
+var
+  idx, togo: Integer;
+  i: Integer;
+begin
+  togo := 0;
+  found := false;
+  for idx := Low(fxymoves) to High(fxymoves) do
+    fxymoves[idx] := InitMove;
 
+  while found = false do
+  begin
+    if togo > maxMoves then
+      Exit(false);
+    mvIdx := 0;
+    SearchPh4XCross(Phase3CenterCoord(x, x, U),
+      Phase4UDBrickCoord(x, x) mod B_8_4,
+      { get only y-part}
+      Phase4RLFBBrickCoord(x, x) and $F { get only y-part}, togo);
+    Inc(togo);
+  end;
+  result := true;
+end;
+
+procedure faceletCube.SearchPh4XCross(cx,b, bo, togo: integer);
+var
+  mv: moves;
+  sc1: SymCoord32;
+  cx1,b1,bo1:UInt16;
+  syms: UInt8;
+
+  newccx, newslc, neworthoslc, tabIdx: Integer;
+
+begin
+  Application.ProcessMessages;
+
+  if Ph4UDXCrossPrun[B_8_4 * (B_8_4 * bo + b) + cx] > togo then
+    Exit;
+  if (togo = 0) then
+  begin
+    found := true;
+  end
+  else
+  begin
+    mv := InitMove;
+
+    while true do
+    begin
+      if mvIdx = 0 then
+        mv := nextMovePhase4Arr[NoMove, mv]
+      else
+        mv := nextMovePhase4Arr[fxymoves[mvIdx - 1], mv];
+
+      if mv > xB2 then
+      begin
+        Exit
+      end
+      else
+      begin
+        cx1 := Phase4UDXCrossMove[cx, Ord(mv)];
+        case mv of
+          fU1..fB3:
+          begin
+            b1 := Phase4UDBrickMove[b, Ord(mv)];
+            bo1:=bo;
+          end;
+          xU1..xB3:
+          begin
+            b1 := Phase4UDBrickMove[b, Ord(mv)+18];
+            bo1 := Phase4RLFBBrickMove[bo, Ord(mv)+18];
+          end;
+
+        end;
+
+
+        fxymoves[mvIdx] := mv;
+        Inc(mvIdx);
+        SearchPh4XCross(cx1,b1, bo1, togo-1);
+
+        if found then
+          // kehre zurück, ohne mvIdx zu verändern
+          Exit;
+        Dec(mvIdx)
+      end;
+    end;
+
+  end;
+end;
 
 
 

@@ -666,6 +666,22 @@ begin
       end;
     end;
 
+  Form1.Memo1.Lines.Add('');
+  Memo1.Lines.Add('xcross:');
+
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+
+    if fc.MakePh4XCross(i, 25) then
+    begin
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, i);
+      fc.applyMoves(i, i);
+    end;
+  end;
+
+
+
   Inc(grandTotal, totalLength);
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('Number of moves in phase 4: ' + IntToStr(totalLength));
@@ -1020,8 +1036,8 @@ begin
   //workcube.Free;
 {$ENDIF}
 {$IFDEF LOADPHASE3}
-  BPhase2.Visible := True;
-  BPhase2.Enabled := False;
+  BPhase3.Visible := True;
+  BPhase3.Enabled := False;
   createNextMovePhase3Table;
 
   //createPh3CenterMoveTable;
@@ -1054,15 +1070,16 @@ begin
 {$ENDIF}
 {$IFDEF LOADPHASE4}
 
-  BPhase2.Visible := True;
-  BPhase2.Enabled := False;
+  BPhase4.Visible := True;
+  BPhase4.Enabled := False;
   createNextMovePhase4Table;
   createPhase4RLFBBrickMoveTable;
   createPhase4UDBrickMoveTable;
   createPh4CenterMoveTable;
+  createPhase4UDXCrossMoveTable;
   createPh4UDPlusCrossPruningTable;
   createPh4UDCentBrickPruningTable;
-
+  createPh4UDXCrossPruningTable;
 
   //workcube := FaceletCube.Create(nil, 11);
   //createNextMovePhase2Table;
