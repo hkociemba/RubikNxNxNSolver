@@ -150,40 +150,47 @@ begin
 end;
 
 procedure createFBPlusCrossPruningTable;
+//we fix the edge parities here, since all following parts do
 var
   fc: faceletCube;
-  i, j, idx, depth, newIdx, done: integer;
-  a: Axis;
+  i, idx, newIdx, ep, newep, depth, done: integer;
   mv: Moves;
 begin
-  SetLength(FBPlusCrossPrun, B_16_8);
+  SetLength(FBPlusCrossPrun, B_16_8 * 2);
   fc := faceletCube.Create(nil, 11);
-  for i := 0 to B_16_8 - 1 do
+  for i := 0 to B_16_8 * 2 - 1 do
     FBPlusCrossPrun[i] := $FF;
   idx := fc.Phase2CenterCoord(2, fc.size div 2); // 2 is arbitrary
   FBPlusCrossPrun[idx] := 0; // distance to solved
   done := 1;
   depth := 0;
-  while done <> B_16_8 do
+  while done <> B_16_8 * 2 do
   begin
     for idx := 0 to B_16_8 - 1 do
-    begin
-      if FBPlusCrossPrun[idx] = depth then
+      for ep := 0 to 1 do
       begin
-        for mv := fU1 to xB3 do
+        if FBPlusCrossPrun[2*idx+ep] = depth then
         begin
-          if not Phase2Allowed[Ord(mv)] then
-            continue;
-          newIdx := FBCenterMove[idx, Ord(mv)];
-          if FBPlusCrossPrun[newIdx] = $FF then
+          for mv := fU1 to xB3 do
           begin
-            FBPlusCrossPrun[newIdx] := depth + 1;
-            Inc(done);
+            if not Phase2Allowed[Ord(mv)] then
+              continue;
+            newIdx := FBCenterMove[idx, Ord(mv)];
+            if (mv = xU1) or (mv = xU3) or (mv = xD1) or (mv = xD3) then
+              newep := 1 - ep
+            else
+              newep := ep;
+            if FBPlusCrossPrun[2*newIdx+newep] = $FF then
+            begin
+              FBPlusCrossPrun[2*newIdx+newep] := depth + 1;
+              Inc(done);
+            end;
           end;
         end;
       end;
-    end;
-    Inc(depth); //1,3,28,222,888,2584,6513,10591,12680,12870
+     Inc(depth); //1,3,28,222,888,2584,6513,10591,12680,12870 without edge parity
+    // 1,3,28,222,1058,3860,10815,19252,24715,25730,25740 // with edge parity
+    // max 10 moves
   end;
   fc.Free;
 end;
@@ -191,7 +198,7 @@ end;
 procedure createFBFullCenterSliceCoordPruningTable;
 { TODO : mit Symmetrien U2, F2, Spiegelung reduzieren }
 var
-  j, depth, idxCent1, idxCent2, idxSlice, newIdxCent1, newIdxCent2, newIdxSlice: UInt32;
+  depth, idxCent1, idxCent2, idxSlice, newIdxCent1, newIdxCent2, newIdxSlice: UInt32;
 
   i, done, idx, newIdx: UInt64;
   mv: Moves;
@@ -278,22 +285,13 @@ begin
   end;
 end;
 
+
 procedure createFBXCrossPruningTable;
 var
-  i, j, idx, newIdx, done, depth, idxCent, idxSlice, newIdxCent, newIdxSlice: UInt32;
+  i, idx, newIdx, done, depth, idxCent, idxSlice, newIdxCent, newIdxSlice: UInt32;
   mv: Moves;
-  // fs: TFileStream;
-  // const
-  // fName = 'FBXCrossPrun';
 begin
   SetLength(FBXCrossPrun, B_16_8 * 4);
-  // if FileExists(fName) then
-  // begin
-  // fs := TFileStream.Create(fName, fmOpenRead);
-  // fs.ReadBuffer(FBXCrossPrun[0], B_16_8 * 4);
-  // fs.Free;
-  // end
-  // else
 
   for i := 0 to B_16_8 * 4 - 1 do
     FBXCrossPrun[i] := $FF;
@@ -348,6 +346,8 @@ begin
   // fs.WriteBuffer(FBXCrossPrun[0], B_16_8 * 4);
   // fs.Free;
 end;
+
+
 
 
 procedure createFBSliceMoveTable;

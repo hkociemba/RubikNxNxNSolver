@@ -58,7 +58,7 @@ type
 
 implementation
 
-uses main, SysUtils, Windows, Generics.Collections, Forms, phase1_tables;
+uses main, SysUtils, Windows, Forms, phase1_tables;
 
 const
   maxThreads = 18; // Sollte ein Teiler von 54 sein
@@ -79,7 +79,6 @@ end;
 procedure threadWrapper.Execute;
 var
   aa: integer; // 1. Drehung hat index 3*aa bis 3*aa+2
-  success: boolean;
   handles: array [0 .. maxThreads - 1] of THandle;
   k: integer;
 begin
@@ -155,7 +154,7 @@ var
   mv: moves;
   sc1: SymCoord32;
   syms: UInt8;
-  n, altccx,altccy, altslx, altsly, key: integer;
+  n, altccx, altccy, altslx, altsly, key: integer;
 
   newccx, newccy, newslx, newsly: integer;
   aa: integer;
@@ -192,8 +191,6 @@ begin
       Exit;
     if findLowerIndexUDStates10(key, altccx) <> -1 then
       exit;
-
-
 
   end;
   { TODO : Reihenfolge untersuchen }
@@ -267,7 +264,7 @@ begin
             newsly := UDBrick256Move[sly, Ord(mv) - 18];
           end;
         end;
-         { TODO : check this }
+        { TODO : check this }
         // dies bringt 2-3s
         //if (newccx = ccx) and (newslx = slx) and (newccy = ccy) then
         //  continue;
@@ -319,6 +316,7 @@ begin
   Form1.Memo1.Lines.Add('Number of moves in phase 1: ' + IntToStr(ii));
   Form1.Memo1.Lines.Add('');
   Form1.BPhase1.Caption := 'Solve Phase 1';
+  Form1.BPhase2.Enabled := True; //We can do Phase 2 now
 end;
 
 procedure makeUDAll.showstuff6;
@@ -339,16 +337,15 @@ var
   fc: faceletcube;
   tt: threadWrapper;
 begin
-  //++++++++++++++++++++++ make Plus-cross of phase1 +++++++++++++++++++++++++++++++
   fc := Form1.fcube;
-
   totalLength := 0;
-  synchronize(@showstuff);
 
+  //++++++++++++++++++++++ fix Plus-cross of phase1 ++++++++++++++++++++++++++++
+  synchronize(@showstuff);
   if Odd(fc.size) then
     for i := 1 to fc.size div 2 - 1 do
     begin
-      if Form1.fcube.MakeUDPlusCross1(i, 20) then
+      if Form1.fcube.MakeUDPlusCross1(i) then
       begin
         Inc(totalLength, fc.mvIdx);
         ii := i;
@@ -362,7 +359,9 @@ begin
   //++++++++++++++++++++++++++++ fix center orbits of phase 1 ++++++++++++++++++
   synchronize(@showstuff2);
 
-  for i := 1 to fc.size div 2 - 2 do
+  for i := fc.size div 2 - 2 downto 1 do
+
+
     for j := i + 1 to fc.size div 2 - 1 do
     begin
       if Terminated then
@@ -380,10 +379,10 @@ begin
       synchronize(@printApply);
     end;
 
-  //++++++++++++++++++++++++++++ make X-cross of phase 1 +++++++++++++++++++++++
+  //++++++++++++++++++++++++++++ fix X-cross of phase 1 ++++++++++++++++++++++++
   synchronize(@showstuff4);
   for i := 1 to fc.size div 2 - 1 do
-    if Form1.fcube.MakeUDXCross(i, 20) then
+    if Form1.fcube.MakeUDXCross(i) then
     begin
       Inc(totalLength, fc.mvIdx);
       ii := i;

@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 2184
+  Left = 1041
   Height = 845
-  Top = 475
+  Top = 387
   Width = 1183
   Caption = 'Form1'
   ClientHeight = 825
@@ -9,6 +9,7 @@ object Form1: TForm1
   Menu = MainMenu1
   OnActivate = FormActivate
   OnCreate = FormCreate
+  Position = poDesktopCenter
   LCLVersion = '2.0.12.0'
   object Memo1: TMemo
     Left = 0
@@ -358,6 +359,16 @@ object Form1: TForm1
         OnClick = BPhase4Click
         TabOrder = 16
       end
+      object BSolveAll: TButton
+        Left = 296
+        Height = 25
+        Top = 712
+        Width = 344
+        Anchors = [akRight, akBottom]
+        Caption = 'Solve all Phases'
+        OnClick = BSolveAllClick
+        TabOrder = 17
+      end
     end
     object TabSheet2: TTabSheet
       Caption = 'Pattern Editor'
@@ -368,7 +379,6 @@ object Form1: TForm1
     Top = 624
     object MenuItem1: TMenuItem
       Caption = 'File'
-      OnClick = MenuItem1Click
       object LoadCube: TMenuItem
         Caption = 'Load Cube'
         OnClick = LoadCubeClick

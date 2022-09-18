@@ -93,7 +93,7 @@ const
     false, false, false, false, false, { fU1..fD3 }
     true, true, true, true, true, true, { fR1..fL3 }
     true, true, true, true, true, true, { fF1..fB3 }
-    true, true, true, true, true, true, { xU1..xD1 }
+    true, true, true, true, true, true, { xU1..xD3 }
     false, true, false, false, true, false, { xR1..xL3 }
     false, true, false, false, true, false, { xF1..xB3 }
     true, true, true, true, true, true, { yU1..yD1 }
@@ -177,8 +177,8 @@ const
     (0, 1), (1, 2), (2, 0), (3, 2), (0, 2), (1, 0), (2, 0), (3, 0), (0, 2),
     (1, 1), (2, 0), (3, 3), (0, 2), (1, 3), (2, 0), (3, 1), (0, 2));
 
-  // für das EdgeCluster C(0,y) wird die Nummerierung so abgeändert, dass 0..11
-  // die Clusterelement  unter yU2,yD2,yR2,yL2,yF2,YB2,U,D,R,L,F2,B2 sind
+  // for EdgeCluster C(0,y) change indexing such that 0..11 denote
+  // the elements under the orbit of yU2,yD2,yR2,yL2,yF2,YB2,U,D,R,L,F2,B2
   remapEdges: array [0 .. 23] of Integer = (0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14,
     15, 16, 17, 18, 19, 20, 8, 21, 9, 22, 10, 23, 11);
   invRemapEdges: array [0 .. 23] of Integer = (0, 1, 2, 3, 4, 5, 6, 7, 17, 19,

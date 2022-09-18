@@ -1,8 +1,11 @@
 unit main;
-//{$Define LOADPHASE1}
-//{$Define LOADPHASE2}
-//{$Define LOADPHASE3}
+
+{$Define LOADPHASE1}
+{$Define LOADPHASE2}
+{$Define LOADPHASE3}
 {$Define LOADPHASE4}
+
+{$Define LOADALL}
 
 {$mode objfpc}{$H+}
 
@@ -36,6 +39,7 @@ type
     BPhase1: TButton;
     BPhase3: TButton;
     BPhase4: TButton;
+    BSolveAll: TButton;
     CheckWide: TCheckBox;
     CheckWide1: TCheckBox;
     ColorDialog: TColorDialog;
@@ -84,11 +88,11 @@ type
     procedure BPhase2Click(Sender: TObject);
     procedure BPhase4Click(Sender: TObject);
     procedure BRandomClick(Sender: TObject);
+    procedure BSolveAllClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure BPhase3Click(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure MenuItem1Click(Sender: TObject);
     procedure LoadCubeClick(Sender: TObject);
     procedure PaintBoxFacesMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
@@ -129,16 +133,11 @@ implementation
 uses LCLIntf (*RGB*), phase1_tables, phase2_tables, phase3_tables, phase4_tables,
   UDThreaded;
 
-procedure TForm1.MenuItem1Click(Sender: TObject);
-begin
-
-end;
 
 procedure TForm1.LoadCubeClick(Sender: TObject);
 var
   i, j, idx, sz: integer;
   a: Axis;
-  c: ColorIndex;
   fs: TFileStream;
   buf: array of byte;
   fsN: int64;
@@ -172,6 +171,10 @@ begin
           end;
         end;
   end;
+  BPhase1.Enabled := True;
+  BPhase2.Enabled := False;
+  BPhase3.Enabled := False;
+  BPhase4.Enabled := False;
 end;
 
 procedure TForm1.SaveCubeClick(Sender: TObject);
@@ -372,8 +375,8 @@ begin
   PaintBoxFaces.controlstyle := PaintBoxFaces.controlstyle - [csopaque];
   PaintBoxFaces.Invalidate;
   PaintBoxFaces.controlstyle := PaintBoxFaces.controlstyle + [csopaque];
-  SpinSliceX.MaxValue := SpinSize.Value - 2;
-  SpinSliceY.MaxValue := SpinSize.Value - 2;
+  SpinSliceX.MaxValue := SpinSize.Value div 2 - 1;
+  SpinSliceY.MaxValue := SpinSize.Value div 2 - 1;
   SpinSliceX.Value := 1;
   SpinSliceY.Value := 1;
   if SpinSize.Value = 1 then
@@ -386,6 +389,10 @@ begin
     SpinSliceX.Enabled := True;
     SpinSliceY.Enabled := True;
   end;
+  BPhase1.Enabled := True;
+  BPhase2.Enabled := False;
+  BPhase3.Enabled := False;
+  BPhase4.Enabled := False;
 end;
 
 
@@ -549,7 +556,7 @@ begin
     BPhase1.Caption := 'Abort';
     stopProgram := False;
     grandTotal := 0;
-    tt := makeUDAll.Create(True); // nicht gleich starten lassen
+    tt := makeUDAll.Create(True); // do not start
     tt.FreeOnTerminate := True;
     tt.Resume;
   end
@@ -557,41 +564,43 @@ begin
   begin
     BPhase1.Caption := 'Solve Phase 1';
     stopProgram := True;
+    BPhase2.Enabled := False;
   end;
+
 end;
 
 procedure TForm1.BPhase2Click(Sender: TObject);
 var
-  i, j, total, totalLength, done, depth: integer;
-  hasFound: boolean;
+  i, j, totalLength: integer;
   fc: FaceletCube;
 begin
   fc := fcube;
   totalLength := 0;
   Memo1.Lines.Add('Phase 2 - RL|FB centers to RL|FB faces:');
-  Memo1.Lines.Add('');
 
+  //++++++++++++++++++++++ fix Plus-cross of phase2 ++++++++++++++++++++++++++++
+  Memo1.Lines.Add('');
   Memo1.Lines.Add('+cross:');
   for i := 1 to fc.size div 2 - 1 do
   begin
-    if Form1.fcube.MakeFBPlusCross(i, 25) then
+    if Form1.fcube.MakeFBPlusCross(i) then
     begin
-      hasFound := True;
-      Inc(done);
       Inc(totalLength, fc.mvIdx);
       fc.printMoves(i, fc.size div 2);
       fc.applyMoves(i, fc.size div 2);
     end;
   end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  //++++++++++++++++++++++++++++ fix center orbits of phase 2 ++++++++++++++++++
   Form1.Memo1.Lines.Add('');
   Memo1.Lines.Add('cluster pairs:');
 
-  for i := 1 to fc.size div 2 - 2 do // size muss ungerade sein
+  for i := fc.size div 2 - 2 downto 1 do // size uneven
     for j := i + 1 to fc.size div 2 - 1 do
     begin
 
-      if fcube.MakeFBFullCenter(i, j, 25) then
+      if fcube.MakeFBFullCenter(i, j) then
       begin
         Inc(totalLength, fcube.mvIdx);
 
@@ -599,65 +608,64 @@ begin
         fcube.applyMoves(i, j);
       end;
     end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
+  //++++++++++++++++++++++++++++ fix x-cross of phase 2 ++++++++++++++++++++++++
   Form1.Memo1.Lines.Add('');
-
   Memo1.Lines.Add('xcross:');
-
 
   for i := 1 to fc.size div 2 - 1 do
   begin
 
-    if fc.MakeFBXCross(i, depth) then
+    if fc.MakeFBXCross(i) then
     begin
       Inc(totalLength, fc.mvIdx);
       fc.printMoves(i, i);
       fc.applyMoves(i, i);
     end;
   end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   Inc(grandTotal, totalLength);
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('Number of moves in phase 2: ' + IntToStr(totalLength));
   Form1.Memo1.Lines.Add('');
+  BPhase3.Enabled := True;
   Application.ProcessMessages;
-
-  exit;
-
 end;
 
-procedure TForm1.BPhase4Click(Sender: TObject);
+procedure TForm1.BPhase3Click(Sender: TObject);
 var
-  i, j, total, totalLength, depth: integer;
-  hasFound: boolean;
+  i, j, totalLength: integer;
   fc: FaceletCube;
 begin
   fc := fcube;
   totalLength := 0;
-  Memo1.Lines.Add('Phase 4 - U and D centers to their faces:');
-  Memo1.Lines.Add('');
+  Memo1.Lines.Add('Phase 3 R,L,F and B centers to their faces:');
 
+  //++++++++++++++++++++++ fix +-cross of phase3 ++++++++++++++++++++++++++++
+  Memo1.Lines.Add('');
   Memo1.Lines.Add('+cross:');
   for i := 1 to fc.size div 2 - 1 do
   begin
-    if Form1.fcube.MakePh4UDPlusCross(i, 25) then
+    if Form1.fcube.MakePh3RLFBPlusCross(i) then
     begin
-      hasFound := True;
       Inc(totalLength, fc.mvIdx);
       fc.printMoves(i, fc.size div 2);
       fc.applyMoves(i, fc.size div 2);
     end;
   end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
+  //++++++++++++++++++++++++++++ fix center orbits of phase 3 ++++++++++++++++++
   Form1.Memo1.Lines.Add('');
   Memo1.Lines.Add('cluster pairs:');
 
-  for i := 1 to fc.size div 2 - 2 do // size muss ungerade sein
+  for i := fc.size div 2 - 2 downto 1 do  // size uneven
     for j := i + 1 to fc.size div 2 - 1 do
     begin
 
-      if fcube.MakePh4UDCenters(i, j, 25) then
+      if fcube.MakePh3Cent702(i, j) then
       begin
         Inc(totalLength, fcube.mvIdx);
 
@@ -665,28 +673,103 @@ begin
         fcube.applyMoves(i, j);
       end;
     end;
+  //about 17 moves for 16 centers
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  //++++++++++++++++++++++++++++ fix x-cross of phase 3 ++++++++++++++++++++++++
   Form1.Memo1.Lines.Add('');
   Memo1.Lines.Add('xcross:');
 
   for i := 1 to fc.size div 2 - 1 do
   begin
 
-    if fc.MakePh4XCross(i, 25) then
+    if fc.MakePh3XCross(i) then
     begin
       Inc(totalLength, fc.mvIdx);
       fc.printMoves(i, i);
       fc.applyMoves(i, i);
     end;
   end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  Inc(grandTotal, totalLength);
+  Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add('Number of moves in phase 3: ' + IntToStr(totalLength));
+  Form1.Memo1.Lines.Add('');
+  Application.ProcessMessages;
+  BPhase4.Enabled := True;
+
+end;
 
 
+procedure TForm1.BPhase4Click(Sender: TObject);
+var
+  i, j, totalLength: integer;
+  fc: FaceletCube;
+begin
+
+  fc := fcube;
+  totalLength := 0;
+  Memo1.Lines.Add('Phase 4 - U and D centers to their faces:');
+
+  //++++++++++++++++++++++ fix +-cross of phase4 +++++++++++++++++++++++++++
+  Memo1.Lines.Add('');
+  Memo1.Lines.Add('+cross:');
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+    if Form1.fcube.MakePh4UDPlusCross(i) then
+    begin
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, fc.size div 2);
+      fc.applyMoves(i, fc.size div 2);
+    end;
+  end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  //++++++++++++++++++++++++++++ fix center orbits of phase 4 ++++++++++++++++++
+  Form1.Memo1.Lines.Add('');
+  Memo1.Lines.Add('cluster pairs:');
+
+  for i := fc.size div 2 - 2 downto 1 do  // size uneven
+    for j := i + 1 to fc.size div 2 - 1 do
+    begin
+
+      if fcube.MakePh4UDCenters(i, j) then
+      begin
+        Inc(totalLength, fcube.mvIdx);
+
+        fcube.printMoves(i, j);
+        fcube.applyMoves(i, j);
+      end;
+    end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  //++++++++++++++++++++++++++++ fix x-cross of phase 4 ++++++++++++++++++++++++
+  Form1.Memo1.Lines.Add('');
+  Memo1.Lines.Add('xcross:');
+
+  for i := 1 to fc.size div 2 - 1 do
+  begin
+
+    if fc.MakePh4XCross(i) then
+    begin
+      Inc(totalLength, fc.mvIdx);
+      fc.printMoves(i, i);
+      fc.applyMoves(i, i);
+    end;
+  end;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Inc(grandTotal, totalLength);
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('Number of moves in phase 4: ' + IntToStr(totalLength));
   Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add('Total number of moves: ' + IntToStr(grandTotal));
+  Form1.Memo1.Lines.Add('');
   Application.ProcessMessages;
+
+  for i := 1 to fc.size div 2 - 1 do //should be 0 for all edge orbits
+    Memo1.Lines.Add(Format('%d', [fcube.edgeParity(i)]));
 
 end;
 
@@ -702,51 +785,24 @@ begin
     slice := random(sz);
     fcube.move(Axis(a), slice);
   end;
+  BPhase2.Enabled := False;
+  BPhase3.Enabled := False;
+  BPhase4.Enabled := False;
+end;
+
+procedure TForm1.BSolveAllClick(Sender: TObject);
+begin
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
+//test routine for several purposes
 var
   i, j, cls, sm, repcoord, coordtrans: integer;
   s: string;
 begin
 
-  //for i:=0 to 4900-1 do
-  // for j:=0 to 36-1 do
-  // begin
-  //  sm:=Ph3Brick702Move[i,j];
-  //  cls:=Ph3RLFBCenterMove[i,j];
-  //  if sm<>cls then
-  //    repcoord:=0;
-  //  end;
 
-
-  //for i:= 0 to 4900-1 do
-  //begin
-  //  fcube.InvPh3Brick702Coord(i,1);
-  //  if fcube.Ph3Brick702Coord(1)<>i then
-  //    j:=1;
-  //end;
-
-
-  Memo1.Lines.Add(Format('%d', [fcube.getPh3Brick702RLFBCentDepth(1, 2)]));
-
-
-  //Inc(grandTotal);
-  //Memo1.Lines.Add(IntToSTr(grandTotal));
-  //fcube.InvPh3RLFBCenterCoord(3000, 1, 2);
-  //if odd(grandTotal) then
-
-  // fcube.applyInvSymmetryByIndex(1, 2, 1);
-  //fcube.applyInvSymmetryByIndex(3, 3, grandTotal div 2);
-
-  // fcube.applySymmetryByIndex(1, 2, 1);
-  //fcube.applySymmetryByIndex(3, 3, grandTotal div 2);
-
-
-
-  //fcube.applySymmetry(1, 3, S_LR2);
-  //fcube.applySymmetry(2, 3, S_LR2);
-  //fcube.InvPh3RLFBCenterCoord(grandTotal mod 4900,1,2);
+  Memo1.Lines.Add(Format('%d', [fcube.edgeParity(SpinSliceX.Value)]));
 
 
   PaintBoxFaces.Invalidate;
@@ -754,71 +810,7 @@ begin
 
 end;
 
-procedure TForm1.BPhase3Click(Sender: TObject);
-var
-  i, j, total, totalLength, depth: integer;
-  hasFound: boolean;
-  fc: FaceletCube;
-begin
-  fc := fcube;
-  totalLength := 0;
-  Memo1.Lines.Add('Phase 3 R,L,F and B centers to their faces:');
-  Memo1.Lines.Add('');
 
-  Memo1.Lines.Add('+cross:');
-  for i := 1 to fc.size div 2 - 1 do
-  begin
-    if Form1.fcube.MakePh3RLFBPlusCross(i, 25) then
-    begin
-      hasFound := True;
-      Inc(totalLength, fc.mvIdx);
-      fc.printMoves(i, fc.size div 2);
-      fc.applyMoves(i, fc.size div 2);
-    end;
-  end;
-
-  Form1.Memo1.Lines.Add('');
-  Memo1.Lines.Add('cluster pairs:');
-
-  for i := 1 to fc.size div 2 - 2 do // size muss ungerade sein
-    for j := i + 1 to fc.size div 2 - 1 do
-    begin
-
-      if fcube.MakePh3Cent702(i, j, 25) then
-      begin
-        Inc(totalLength, fcube.mvIdx);
-
-        fcube.printMoves(i, j);
-        fcube.applyMoves(i, j);
-      end;
-    end;
-  //about 17 moves for 16 centers
-
-  Form1.Memo1.Lines.Add('');
-  Memo1.Lines.Add('xcross:');
-
-
-  for i := 1 to fc.size div 2 - 1 do
-  begin
-
-    if fc.MakePh3XCross(i, 25) then
-    begin
-      Inc(totalLength, fc.mvIdx);
-      fc.printMoves(i, i);
-      fc.applyMoves(i, i);
-    end;
-  end;
-
-
-  Inc(grandTotal, totalLength);
-  Form1.Memo1.Lines.Add('');
-  Form1.Memo1.Lines.Add('Number of moves in phase 3: ' + IntToStr(totalLength));
-  Form1.Memo1.Lines.Add('');
-  Application.ProcessMessages;
-
-  exit;
-
-end;
 
 procedure TForm1.FormActivate(Sender: TObject);
 //put the code here and not into create.
@@ -838,8 +830,13 @@ begin
   BPhase3.Enabled := True;
 {$ENDIF}
 {$IFDEF LOADPHASE4}
-
   BPhase4.Enabled := True;
+{$ENDIF}
+
+{$IFDEF LOADALL}
+  BPhase2.Enabled := False;
+  BPhase3.Enabled := False;
+  BPhase4.Enabled := False;
 {$ENDIF}
 end;
 
@@ -993,11 +990,10 @@ begin
   // prevent flickering
   PaintBoxFaces.controlstyle := PaintBoxFaces.controlstyle + [csopaque];
   // cursor for colorpicking
-  SpinSliceX.MaxValue := SpinSize.Value - 2;
-  SpinSliceY.MaxValue := SpinSize.Value - 2;
+  SpinSliceX.MaxValue := SpinSize.Value div 2 - 1;
+  SpinSliceY.MaxValue := SpinSize.Value div 2 - 1;
 
-{$IFDEF LOADPHASE1}
-  BPhase1.Visible := True;
+{$IFDEF LOADPHASE1 OR $IFDEF LOADALL}
   BPhase1.Enabled := False;
   createNextMovePhase1Table;
   createUDBrick256CoordSymTransTable;
@@ -1014,9 +1010,9 @@ begin
   createUDCentXBrick256CoordPruningTable;
   createUDXCrossPruningTable;
 
+
 {$ENDIF}
-{$IFDEF LOADPHASE2}
-  BPhase2.Visible := True;
+{$IFDEF LOADPHASE2 OR $IFDEF LOADALL}
   BPhase2.Enabled := False;
   createNextMovePhase2Table;
   createFBCenterMoveTable;
@@ -1027,20 +1023,11 @@ begin
   createFBXCrossMoveTable;
   createFBXCrossPruningTable;
 
-
-
-  //workcube.createFBSliceMoveTable(2, 4);
-
-
-  //createFBFullCenterSliceCoordPruningTable;
-  //workcube.Free;
 {$ENDIF}
-{$IFDEF LOADPHASE3}
-  BPhase3.Visible := True;
+{$IFDEF LOADPHASE3 OR $IFDEF LOADALL}
   BPhase3.Enabled := False;
   createNextMovePhase3Table;
 
-  //createPh3CenterMoveTable;
   createPh3RLFBCenterMoveTable; //important also for bricks
   createPh3RLFBXCrossMoveTable;
 
@@ -1052,25 +1039,8 @@ begin
 
   createDistanceTable;
 
-  //workcube.createPhase3OrthoSliceMoveTables(2, 4);
-  //workcube.createPhase3XCrossMoveTables(2);
-
-  //createPhase3PlusCrossPruningTable;
-  //Setlength(Phase3FullCenterSlicePrun, 3, B_8_4 * B_8_4 * B_8_4 * B_8_4);
-  //createPhase3FullCenterSliceCoordPruningTable(U);
-  //createPhase3FullCenterSliceCoordPruningTable(R);
-  //createPhase3FullCenterSliceCoordPruningTable(F);
-
-  //Setlength(Phase3XCrossPrun, 3, B_8_4 * B_8_4 * 16);
-  //createPhase3XCrossPruningTable(U);
-  //createPhase3XCrossPruningTable(R);
-  //createPhase3XCrossPruningTable(F);
-  //BPhase3.Visible := True;
-  //workcube.Free;
 {$ENDIF}
-{$IFDEF LOADPHASE4}
-
-  BPhase4.Visible := True;
+{$IFDEF LOADPHASE1 OR $IFDEF LOADALL}
   BPhase4.Enabled := False;
   createNextMovePhase4Table;
   createPhase4RLFBBrickMoveTable;
@@ -1080,17 +1050,13 @@ begin
   createPh4UDPlusCrossPruningTable;
   createPh4UDCentBrickPruningTable;
   createPh4UDXCrossPruningTable;
-
-  //workcube := FaceletCube.Create(nil, 11);
-  //createNextMovePhase2Table;
-  //workcube.createEdge12_24MoveTable(2);
-  //workcube.Free;
 {$ENDIF}
 end;
 
 
 
 end.
+
 
 
 

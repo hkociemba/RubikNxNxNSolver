@@ -25,8 +25,7 @@ type
     mvIdx: integer; // Helper variables for search function
     found: boolean;
     fxymoves: array [0 .. 25] of moves; // f-moves und xy-slice moves
-    //clustersave: array [1 .. 2, 0 .. 23] of ColorIndex;
-    // permutations of the remapped edgecluster. Wird mit getEdgeCluster(y)gefüllt.
+    // permutations of the remapped edgecluster (0,y). filled with getEdgeCluster(y)
     edgeCluster: array [0 .. 23] of integer;
 
     //procedure setSize(s: Integer);
@@ -43,6 +42,7 @@ type
     //create middle edges on the cubie level
     function setMiddleEdgeCubies: EdgeStatus;
     function cornerParityEven: boolean;
+    function edgeParity(y: integer): integer;
     procedure DrawCube(xOff, yOff: integer);
     procedure drawPara1(x, y: integer);
     procedure drawPara2(x, y: integer);
@@ -56,10 +56,10 @@ type
     function Phase1Brick256Coord(x, y: integer): integer;
     procedure InvPhase1Brick256Coord(cc, x, y: integer);
 
-    function MakeUDPlusCross1(x, maxMoves: integer): boolean; // Findet Zugfolge
+    function MakeUDPlusCross1(x: integer): boolean; // Findet Zugfolge
     procedure SearchUDPlusCross1(cc, togo: integer);
 
-    function MakeUDXCross(x, maxMoves: integer): boolean;
+    function MakeUDXCross(x: integer): boolean;
     procedure SearchUDXCross(ccx, slx, togo: integer);
 
     // phase 2
@@ -70,11 +70,11 @@ type
     function Phase2SliceCoord(x, y: integer): integer; // 0<=cc<16
     procedure InvPhase2SliceCoord(cc, x, y: integer);
 
-    function MakeFBPlusCross(x, maxMoves: integer): boolean; // Findet Zugfolge
-    procedure SearchFBPlusCross(cc, togo: integer);
-    function MakeFBFullCenter(x, y, maxmoves: integer): boolean;
+    function MakeFBPlusCross(x: integer): boolean; // Findet Zugfolge
+    procedure SearchFBPlusCross(cc, ep,togo: integer);
+    function MakeFBFullCenter(x, y: integer): boolean;
     procedure SearchFBFullCenter(ccx, slx, ccy, togo: integer);
-    function MakeFBXCross(x, maxmoves: integer): boolean;
+    function MakeFBXCross(x: integer): boolean;
     procedure SearchFBXCross(ccx, sly, togo: integer);
 
     // phase 3
@@ -88,22 +88,22 @@ type
 
 
     function Ph3Brick702Coord(x: integer): integer;
-    function InvPh3Brick702Coord(br, x: integer): integer;
-    function MakePh3Cent702(x, y, maxMoves: integer): boolean;
+    procedure InvPh3Brick702Coord(br, x: integer);
+    function MakePh3Cent702(x, y: integer): boolean;
     procedure SearchPh3Cent702(bx, by, cx, cy, dx, dy, togo: integer);
-    function MakePh3XCross(x, maxMoves: integer): boolean;
+    function MakePh3XCross(x: integer): boolean;
     procedure SearchPh3XCross(bx, cx, togo: integer);
-    function MakePh3RLFBPlusCross(x, maxMoves: integer): boolean;
+    function MakePh3RLFBPlusCross(x: integer): boolean;
     procedure SearchPh3RLFBPlusCross(bx, togo: integer);
 
     // phase 4
     function nextMovePh4(idx: integer; currMove: moves): moves;
-    function MakePh4UDPlusCross(x, maxMoves: integer): boolean;
+    function MakePh4UDPlusCross(x: integer): boolean;
     procedure SearchPh4UDPlusCross(c, b, togo: integer);
-    function MakePh4UDCenters(x, y, maxMoves: integer): boolean;
+    function MakePh4UDCenters(x, y: integer): boolean;
     procedure SearchPh4UDCenter(cx, cy, bxy, bo, togo: integer);
-    function MakePh4XCross(x, maxMoves: integer): boolean;
-    procedure SearchPh4XCross(cx,b, bo, togo: integer);
+    function MakePh4XCross(x: integer): boolean;
+    procedure SearchPh4XCross(cx, b, bo, togo: integer);
 
     function Phase4RLFBBrickCoord(x, y: integer): integer;
     procedure InvPhase4RLFBBrickCoord(cc, x, y: integer);
@@ -115,7 +115,7 @@ type
 
     //function getUDBrickXYDepth(x, y: integer): integer;
     //function getUDBrickXCentXDepth(x, y: integer): integer;
-    //function SearchUDCent(x, y, maxMoves: integer): boolean;
+    //function SearchUDCent(x, y: integer): boolean;
     //procedure SearchUDCenter(bx, cx, by, cy, bxby_dist, bxcx_dist,
     //  bycy_dist, togo: integer);
     //function Phase1BrickCoord(x :integer): integer; // 0<=cc<735471
@@ -129,7 +129,7 @@ type
 
     function clusterColorIndex(x, y, i: integer): ColorIndex;
     procedure setClusterColorIndex(x, y, i: integer; col: ColorIndex);
-    //procedure getEdgeCluster(y: Integer);
+    procedure getEdgeCluster(y: integer);
 
     constructor Create(cvas: TCanvas; sz: integer); overload;
     // creates cube with odd size
@@ -814,6 +814,23 @@ begin
     Result := True;
 end;
 
+// return the parity of the (0,y)
+function faceletCube.edgeParity(y: integer): integer;
+var
+  i, j, s: integer;
+begin
+  getEdgeCluster(y);
+  s := 0;
+  for i := 0 to 22 do
+    for j := i + 1 to 23 do
+      if edgecluster[j] < edgecluster[i] then
+        Inc(s);
+  Result := s mod 2;
+end;
+
+
+
+
 function faceletCube.setCornerCubies: CornerStatus;
 var
   i, j: Corner;
@@ -905,6 +922,41 @@ var
 begin
   for i := 0 to 23 do
     setClusterColorIndex(x, y, i, ColorIndex(i div 4));
+end;
+
+//return coodinate for index i (see cubedefs)
+function getPos(i, cl, sz: integer): integer;
+begin
+  case i of
+    0:
+      Result := 0;
+    1:
+      Result := cl;
+    2:
+      Result := sz - 1;
+    3:
+      Result := sz - 1 - cl;
+  end;
+end;
+
+procedure faceletCube.getEdgeCluster(y: integer);
+var
+  i, j, fc: integer;
+  c: array [0 .. 1] of ColorIndex;
+begin
+  for i := 0 to 23 do
+  begin
+    fc := i div 4;
+    c[0] := faceCols[Ord(ECCI[i, 0]), getPos(ECFRow[i, 0], y, size),
+      getPos(ECFCol[i, 0], y, size)];
+    c[1] := faceCols[Ord(ECCI[i, 1]), getPos(ECFRow[i, 1], y, size),
+      getPos(ECFCol[i, 1], y, size)];
+    j := 0;
+    while (ECCI[j, 0] <> c[0]) or (ECCI[j, 1] <> c[1]) do
+      Inc(j);
+    edgeCluster[remapEdges[i]] := remapEdges[j];
+  end;
+
 end;
 
 
@@ -1420,7 +1472,7 @@ begin
   end;
 end;
 
-function faceletCube.MakeUDXCross(x, maxMoves: integer): boolean;
+function faceletCube.MakeUDXCross(x: integer): boolean;
 var
   idx, togo: integer;
 begin
@@ -1431,8 +1483,6 @@ begin
 
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchUDXCross(Phase1CenterCoord(x, x), Phase1Brick256Coord(x, x) and $F, togo);
     Inc(togo);
@@ -1440,7 +1490,7 @@ begin
   Result := True;
 end;
 
-function faceletCube.MakeUDPlusCross1(x, maxMoves: integer): boolean;
+function faceletCube.MakeUDPlusCross1(x: integer): boolean;
 var
   idx, togo: integer;
 begin
@@ -1450,8 +1500,6 @@ begin
     fxymoves[idx] := InitMove;
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchUDPlusCross1(Phase1CenterCoord(x, size div 2), togo);
     // 0 ist die slicecoord der schon gelösten cluster.
@@ -1705,7 +1753,7 @@ begin
 end;
 
 
-function faceletCube.MakeFBPlusCross(x, maxMoves: integer): boolean;
+function faceletCube.MakeFBPlusCross(x: integer): boolean;
 var
   idx, togo: integer;
 begin
@@ -1715,21 +1763,19 @@ begin
     fxymoves[idx] := InitMove;
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
-    SearchFBPlusCross(Phase2CenterCoord(x, size div 2), togo);
+    SearchFBPlusCross(Phase2CenterCoord(x, size div 2), edgeparity(x), togo);
     Inc(togo);
   end;
   Result := True;
 end;
 
-procedure faceletCube.SearchFBPlusCross(cc, togo: integer);
+procedure faceletCube.SearchFBPlusCross(cc, ep, togo: integer);
 var
   mv: moves;
-  newcc: integer;
+  newcc, newep: integer;
 begin
-  if (FBPlusCrossPrun[cc] > togo) then
+  if (FBPlusCrossPrun[2 * cc + ep] > togo) then
     Exit;
   if togo = 0 then
   begin
@@ -1753,16 +1799,23 @@ begin
       begin
 
         if mv < yU1 then
-          newcc := FBCenterMove[cc, Ord(mv)]
+        begin
+          newcc := FBCenterMove[cc, Ord(mv)];
+          if (mv = xU1) or (mv = xU3) or (mv = xD1) or (mv = xD3) then
+            newep := 1 - ep
+          else
+            newep := ep;
+        end
+
         else
           continue;//no y-moves for +cluster
 
-        if (newcc = cc) then
+        if (newcc = cc) and (newep = ep) then
           continue;
 
         fxymoves[mvIdx] := mv;
         Inc(mvIdx);
-        SearchFBPlusCross(newcc, togo - 1);
+        SearchFBPlusCross(newcc,newep, togo - 1);
 
         if found then
           // return without changing mvIdx
@@ -1936,9 +1989,7 @@ begin
           end;
         end;
 
-
-
-        // dies bringt 2-3s
+        // do nothing if coordinates do not change
         if (newccx = ccx) and (newslx = slx) and (newccy = ccy) then
           continue;
 
@@ -1947,7 +1998,6 @@ begin
         SearchFBFullCenter(newccx, newslx, newccy, togo - 1);
 
         if found then
-          // kehre zurück, ohne mvIdx zu verändern
           Exit;
         Dec(mvIdx);
       end;
@@ -1957,24 +2007,16 @@ begin
 end;
 
 
-
-function faceletCube.MakeFBFullCenter(x, y, maxMoves: integer): boolean;
+function faceletCube.MakeFBFullCenter(x, y: integer): boolean;
 var
   idx, togo: integer;
-  //i: Integer;
 begin
   togo := 0;
   found := False;
   for idx := Low(fxymoves) to High(fxymoves) do
     fxymoves[idx] := InitMove;
-
-  // for i := 0 to 30 do
-  // testCount[i] := 0;
-
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchFBFullCenter(Phase2CenterCoord(x, y), Phase2SliceCoord(x, y),
       Phase2CenterCoord(y, x), togo);
@@ -2032,7 +2074,7 @@ begin
 
 end;
 
-function faceletCube.MakeFBXCross(x, maxMoves: integer): boolean;
+function faceletCube.MakeFBXCross(x: integer): boolean;
 var
   idx, togo: integer;
 begin
@@ -2043,8 +2085,6 @@ begin
 
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchFBXCross(Phase2CenterCoord(x, x), Phase2SliceCoord(x, x) and $3, togo);
     // $3 um die y-slice coordinate zu erhalten, die die hinteren Bits enthält
@@ -2149,7 +2189,7 @@ begin
     Phase3CenterCoord(x, size div 2, F);
 end;
 
-function faceletcube.InvPh3Brick702Coord(br, x: integer): integer;
+procedure faceletcube.InvPh3Brick702Coord(br, x: integer);
 
 begin
   InvPhase3CenterCoord(br div B_8_4, x, size div 2, R);
@@ -2316,9 +2356,7 @@ begin
 end;
 
 
-
-
-function faceletCube.MakePh3RLFBPlusCross(x, maxMoves: integer): boolean;
+function faceletCube.MakePh3RLFBPlusCross(x: integer): boolean;
 var
   idx, togo: integer;
 begin
@@ -2328,11 +2366,7 @@ begin
     fxymoves[idx] := InitMove;
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
-
-
     SearchPh3RLFBPlusCross(Ph3RLFBCenterCoord(x, size div 2), togo);
     Inc(togo);
   end;
@@ -2386,10 +2420,9 @@ begin
 end;
 
 
-function faceletCube.MakePh3Cent702(x, y, maxMoves: integer): boolean;
+function faceletCube.MakePh3Cent702(x, y: integer): boolean;
 var
   idx, togo, dx, dy: integer;
-  i: integer;
 begin
   found := False;
   for idx := Low(fxymoves) to High(fxymoves) do
@@ -2400,11 +2433,8 @@ begin
   togo := Max(dx, dy);
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1. empty place in  fxymoves
     //Form1.Memo1.Lines.Add(Format('Searching depth %d...', [togo]));
-
     SearchPh3Cent702(Ph3Brick702Coord(x), Ph3Brick702Coord(y),
       Ph3RLFBCenterCoord(x, y), Ph3RLFBCenterCoord(y, x), dx, dy, togo);
     Inc(togo);
@@ -2431,13 +2461,7 @@ begin
   if stopProgram then
     exit;
 
-  //if (togo = 0) then
-  //begin
-  //  Form1.Memo1.Lines.Add(Format('cy: %d', [cy]));
-  //  printmoves(0, 1);
-  //end;
-
-  if (togo = 0) then //and (cy = 0) then
+  if (togo = 0) then
   begin
     found := True;
   end
@@ -2531,10 +2555,9 @@ begin
 end;
 
 
-function faceletCube.MakePh3XCross(x, maxMoves: integer): boolean;
+function faceletCube.MakePh3XCross(x: integer): boolean;
 var
   idx, togo: integer;
-  nU, nR, nF: UInt32;
 begin
   togo := 0;
   found := False;
@@ -2542,8 +2565,6 @@ begin
     fxymoves[idx] := InitMove;
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1. empty position in fxymoves
     SearchPh3XCross(Ph3Brick702Coord(x), Ph3RLFBCenterCoord(x, x), togo);
     Inc(togo);
@@ -2735,8 +2756,7 @@ end;
 function faceletCube.Phase4RLFBBrickCoord(x, y: integer): integer;
   //0<=cc<256. if x-bricks are solved 0<=cc<16
 var
-  i, m: integer;
-  c: ColorIndex;
+  m: integer;
 begin
   m := size div 2;
   Result := 0;
@@ -2769,7 +2789,7 @@ end;
 
 
 
-function faceletCube.MakePh4UDPlusCross(x, maxMoves: integer): boolean;
+function faceletCube.MakePh4UDPlusCross(x: integer): boolean;
 var
   idx, togo: integer;
 begin
@@ -2779,11 +2799,7 @@ begin
     fxymoves[idx] := InitMove;
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
-
-
     SearchPh4UDPlusCross(Phase3CenterCoord(x, size div 2, U), 0, togo);
     Inc(togo);
   end;
@@ -2858,10 +2874,9 @@ end;
 
 
 
-function faceletCube.MakePh4UDCenters(x, y, maxMoves: integer): boolean;
+function faceletCube.MakePh4UDCenters(x, y: integer): boolean;
 var
   idx, togo: integer;
-  i: integer;
 begin
   togo := 0;
   found := False;
@@ -2870,8 +2885,6 @@ begin
   //Phase3CenterCoord(x, y, R)
   while found = False do
   begin
-    if togo > maxMoves then
-      Exit(False);
     mvIdx := 0; // 1.freier Platz in fxymoves
     SearchPh4UDCenter(Phase3CenterCoord(x, y, U),
       Phase3CenterCoord(y, x, U), Phase4UDBrickCoord(x, y),
@@ -2885,10 +2898,6 @@ end;
 procedure faceletCube.SearchPh4UDCenter(cx, cy, bxy, bo, togo: integer);
 var
   mv: moves;
-  sc1: SymCoord32;
-  syms: UInt8;
-  n, altccy, altslx, key, foundIdx: integer;
-
   cx1, cy1, bxy1, bo1: integer;
 
 begin
@@ -2924,7 +2933,7 @@ begin
           fU1..fB3:
           begin
             cy1 := Phase4CenterMove[cy, Ord(mv)];
-            bo1:=bo;
+            bo1 := bo;
           end;
           xU1..xB3:
           begin
@@ -2953,20 +2962,17 @@ begin
 end;
 
 
-function faceletCube.MakePh4XCross(x,maxMoves: integer): boolean;
+function faceletCube.MakePh4XCross(x: integer): boolean;
 var
-  idx, togo: Integer;
-  i: Integer;
+  idx, togo: integer;
 begin
   togo := 0;
-  found := false;
+  found := False;
   for idx := Low(fxymoves) to High(fxymoves) do
     fxymoves[idx] := InitMove;
 
-  while found = false do
+  while found = False do
   begin
-    if togo > maxMoves then
-      Exit(false);
     mvIdx := 0;
     SearchPh4XCross(Phase3CenterCoord(x, x, U),
       Phase4UDBrickCoord(x, x) mod B_8_4,
@@ -2974,17 +2980,13 @@ begin
       Phase4RLFBBrickCoord(x, x) and $F { get only y-part}, togo);
     Inc(togo);
   end;
-  result := true;
+  Result := True;
 end;
 
-procedure faceletCube.SearchPh4XCross(cx,b, bo, togo: integer);
+procedure faceletCube.SearchPh4XCross(cx, b, bo, togo: integer);
 var
   mv: moves;
-  sc1: SymCoord32;
-  cx1,b1,bo1:UInt16;
-  syms: UInt8;
-
-  newccx, newslc, neworthoslc, tabIdx: Integer;
+  cx1, b1, bo1: UInt16;
 
 begin
   Application.ProcessMessages;
@@ -2993,13 +2995,13 @@ begin
     Exit;
   if (togo = 0) then
   begin
-    found := true;
+    found := True;
   end
   else
   begin
     mv := InitMove;
 
-    while true do
+    while True do
     begin
       if mvIdx = 0 then
         mv := nextMovePhase4Arr[NoMove, mv]
@@ -3008,7 +3010,7 @@ begin
 
       if mv > xB2 then
       begin
-        Exit
+        Exit;
       end
       else
       begin
@@ -3017,12 +3019,12 @@ begin
           fU1..fB3:
           begin
             b1 := Phase4UDBrickMove[b, Ord(mv)];
-            bo1:=bo;
+            bo1 := bo;
           end;
           xU1..xB3:
           begin
-            b1 := Phase4UDBrickMove[b, Ord(mv)+18];
-            bo1 := Phase4RLFBBrickMove[bo, Ord(mv)+18];
+            b1 := Phase4UDBrickMove[b, Ord(mv) + 18];
+            bo1 := Phase4RLFBBrickMove[bo, Ord(mv) + 18];
           end;
 
         end;
@@ -3030,31 +3032,19 @@ begin
 
         fxymoves[mvIdx] := mv;
         Inc(mvIdx);
-        SearchPh4XCross(cx1,b1, bo1, togo-1);
+        SearchPh4XCross(cx1, b1, bo1, togo - 1);
 
         if found then
           // kehre zurück, ohne mvIdx zu verändern
           Exit;
-        Dec(mvIdx)
+        Dec(mvIdx);
       end;
     end;
 
   end;
 end;
 
-
-
-
-
-
-
-
-
-
-
-
-
-//function faceletCube.SearchUDCent(x, y, maxMoves: integer): boolean;
+//function faceletCube.SearchUDCent(x, y: integer): boolean;
 //var
 //  idx, togo, d1, d2,d3: integer;
 //  i: integer;
@@ -3069,8 +3059,6 @@ end;
 //  togo := max(max(d1, d2),d3);
 //  while found = False do
 //  begin
-//    if togo > maxMoves then
-//      Exit(False);
 //    mvIdx := 0; // 1. empty place in  fxymoves
 //    Form1.Memo1.Lines.Add(Format('Searching depth %d...', [togo]));
 

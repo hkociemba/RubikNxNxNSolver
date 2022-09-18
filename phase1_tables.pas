@@ -54,6 +54,7 @@ var
   distance: array of integer;
   testCount: array [0 .. 30] of UInt64;
 
+
 implementation
 
 uses facecube, main, Forms;
@@ -513,7 +514,7 @@ var
   ccx, ccy, slice, newccx, newccy, altnewccy, newslice, altnewslice: integer;
   mv: Moves;
   fs: TFileStream;
-  used: integer;
+  used: integer=0;
   sc1: SymCoord32;
   syms: UInt8;
   savearr: array of States32;
@@ -753,6 +754,7 @@ begin
     fs.Free;
   end;
 end;
+
 
 
 end.

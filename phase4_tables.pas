@@ -60,7 +60,7 @@ end;
 
 procedure createPh4CenterMoveTable;
 var
-  i, j, k: integer;
+  i,  k: integer;
   a: Axis;
   n: UInt32;
   fc: faceletcube;
@@ -124,7 +124,7 @@ end;
 
 procedure createPhase4RLFBBrickMoveTable;
 var
-  i, j, k: integer;
+  i, k: integer;
   a: Axis;
   n: UInt16;
   fc: faceletcube;
@@ -175,7 +175,7 @@ end;
 
 procedure createPhase4UDBrickMoveTable;   { TODO : file anlegen }
 var
-  i, j, k: integer;
+  i, k: integer;
   a: Axis;
   n: UInt16;
   fc: faceletcube;
@@ -241,8 +241,6 @@ var
   i, depth, done: integer;
   b, b1, c, c1: UInt16;
   mv: Moves;
-  a: Axis;
-  // fs: TFileStream;
 const
   NSTATES = 16 * 70;
 begin
@@ -300,9 +298,8 @@ end;
 
 procedure createPh4UDCentBrickPruningTable;
 var
-  j, depth, cx, cy, bxy, cx1, cy1, bxy1: UInt32;
+  depth, cx, cy, bxy, cx1, cy1, bxy1: UInt32;
   i, done, idx, idx1: UInt64;
-  a: Axis;
   mv: Moves;
   fs: TFileStream;
   fName: string;
@@ -378,11 +375,9 @@ end;
 
 procedure createPh4UDXCrossPruningTable;
 var
-  j, depth, i, done, idx1: UInt32;
+  depth, i, done, idx1: UInt32;
   b, b1, bo, bo1, c, c1: UInt16;
-  a: Axis;
   mv: Moves;
-  fs: TFileStream;
   // fName: String;
 const
   NSTATES = B_8_4 { x-xross, c } * 16 {RLFBBrick, bo } * B_8_4 { UDBrick, b };
@@ -440,11 +435,9 @@ begin
   end;
 end;
 
-
-
 procedure createPhase4UDXCrossMoveTable;
 var
-  i, j, k: integer;
+  i, k: integer;
   a: Axis;
   n: UInt16;
   fc: faceletcube;

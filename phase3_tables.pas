@@ -425,7 +425,7 @@ procedure createPh3Brick702RLFBCentPruningTable;
 var
   i, j, depth, depth3, bycx, altbycx: UInt32;
 
-  bx, bx_class, bx_sym, bx1, bx1_class, bx1_sym, by, by1, altby, cx, cx1, altcx: UInt16;
+  bx, bx_class, bx1, bx1_class, bx1_sym, by, by1, altby, cx, cx1, altcx: UInt16;
   n_chunk: UInt32;
   done, total: UInt64;
   backsearch, match: boolean;
@@ -598,7 +598,6 @@ var
   i, depth, done: integer;
   bx, bx1: UInt16;
   mv: Moves;
-  a: Axis;
   // fs: TFileStream;
 const
   NSTATES = B_8_4 * B_8_4;
@@ -639,7 +638,6 @@ end;
 
 procedure createPh3RLFBXCrossPruningTable;
 var
-  a: Axis;
   done, depth, i, idx, newidx: integer;
   bx, bx1, cx, cx1: UInt16;
   mv: Moves;
