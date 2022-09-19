@@ -1,4 +1,4 @@
-Phase 3 -R,L,F,B centers to their faces:
+Phase 3 R,L,F,B centers to their faces:
 
 +cross:
 (1,50): R 2D2 2R2 2F2 2B2 (5)
