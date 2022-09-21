@@ -26,7 +26,7 @@ type
     found: boolean;
     fxymoves: array [0 .. 25] of moves; // f-moves und xy-slice moves
     // permutations of the remapped edgecluster (0,y). filled with getEdgeCluster(y)
-    edgeCluster: array [0 .. 23] of integer;
+    ecls: array [0 .. 23] of integer;
 
     //procedure setSize(s: Integer);
     function getSize: integer;
@@ -71,7 +71,7 @@ type
     procedure InvPhase2SliceCoord(cc, x, y: integer);
 
     function MakeFBPlusCross(x: integer): boolean; // Findet Zugfolge
-    procedure SearchFBPlusCross(cc, ep,togo: integer);
+    procedure SearchFBPlusCross(cc, ep, togo: integer);
     function MakeFBFullCenter(x, y: integer): boolean;
     procedure SearchFBFullCenter(ccx, slx, ccy, togo: integer);
     function MakeFBXCross(x: integer): boolean;
@@ -110,6 +110,11 @@ type
 
     function Phase4UDBrickCoord(x, y: integer): integer;
     procedure InvPhase4UDBrickCoord(cc, x, y: integer);
+
+    //phase 5
+    procedure edgemove(mv: Moves);
+
+
 
     //unused
 
@@ -823,7 +828,7 @@ begin
   s := 0;
   for i := 0 to 22 do
     for j := i + 1 to 23 do
-      if edgecluster[j] < edgecluster[i] then
+      if ecls[j] < ecls[i] then
         Inc(s);
   Result := s mod 2;
 end;
@@ -954,7 +959,7 @@ begin
     j := 0;
     while (ECCI[j, 0] <> c[0]) or (ECCI[j, 1] <> c[1]) do
       Inc(j);
-    edgeCluster[remapEdges[i]] := remapEdges[j];
+    ecls[remapEdges[i]] := remapEdges[j];
   end;
 
 end;
@@ -1815,7 +1820,7 @@ begin
 
         fxymoves[mvIdx] := mv;
         Inc(mvIdx);
-        SearchFBPlusCross(newcc,newep, togo - 1);
+        SearchFBPlusCross(newcc, newep, togo - 1);
 
         if found then
           // return without changing mvIdx
@@ -3043,6 +3048,282 @@ begin
 
   end;
 end;
+
+
+//phase 5
+procedure faceletcube.edgemove(mv: Moves);
+var
+  tmp: integer;
+begin
+  case mv of
+    fU1:
+    begin
+      tmp := ecls[0];
+      ecls[0] := ecls[3];
+      ecls[3] := ecls[2];
+      ecls[2] := ecls[1];
+      ecls[1] := tmp;
+      tmp := ecls[12];
+      ecls[12] := ecls[22];
+      ecls[22] := ecls[16];
+      ecls[16] := ecls[20];
+      ecls[20] := tmp;
+
+    end;
+    fD1:
+    begin
+      tmp := ecls[4];
+      ecls[4] := ecls[7];
+      ecls[7] := ecls[6];
+      ecls[6] := ecls[5];
+      ecls[5] := tmp;
+      tmp := ecls[21];
+      ecls[21] := ecls[18];
+      ecls[18] := ecls[23];
+      ecls[23] := ecls[14];
+      ecls[14] := tmp;
+    end;
+    fR1:
+    begin
+      tmp := ecls[12];
+      ecls[12] := ecls[15];
+      ecls[15] := ecls[14];
+      ecls[14] := ecls[13];
+      ecls[13] := tmp;
+      tmp := ecls[8];
+      ecls[8] := ecls[5];
+      ecls[5] := ecls[11];
+      ecls[11] := ecls[1];
+      ecls[1] := tmp;
+    end;
+    fL1:
+    begin
+      tmp := ecls[16];
+      ecls[16] := ecls[19];
+      ecls[19] := ecls[18];
+      ecls[18] := ecls[17];
+      ecls[17] := tmp;
+      tmp := ecls[3];
+      ecls[3] := ecls[10];
+      ecls[10] := ecls[7];
+      ecls[7] := ecls[9];
+      ecls[9] := tmp;
+    end;
+    fF1:
+    begin
+      tmp := ecls[20];
+      ecls[20] := ecls[9];
+      ecls[9] := ecls[21];
+      ecls[21] := ecls[8];
+      ecls[8] := tmp;
+      tmp := ecls[2];
+      ecls[2] := ecls[17];
+      ecls[17] := ecls[4];
+      ecls[4] := ecls[15];
+      ecls[15] := tmp;
+    end;
+    fB1:
+    begin
+      tmp := ecls[22];
+      ecls[22] := ecls[11];
+      ecls[11] := ecls[23];
+      ecls[23] := ecls[10];
+      ecls[10] := tmp;
+      tmp := ecls[0];
+      ecls[0] := ecls[13];
+      ecls[13] := ecls[6];
+      ecls[6] := ecls[19];
+      ecls[19] := tmp;
+    end;
+
+    fU2:
+    begin
+      edgemove(fU1);
+      edgemove(fU1);
+    end;
+    fD2:
+    begin
+      edgemove(fD1);
+      edgemove(fD1);
+    end;
+    fR2:
+    begin
+      edgemove(fR1);
+      edgemove(fR1);
+    end;
+    fL2:
+    begin
+      edgemove(fL1);
+      edgemove(fL1);
+    end;
+    fF2:
+    begin
+      edgemove(fF1);
+      edgemove(fF1);
+    end;
+    fB2:
+    begin
+      edgemove(fB1);
+      edgemove(fB1);
+    end;
+
+    fU3:
+    begin
+      edgemove(fU1);
+      edgemove(fU1);
+      edgemove(fU1);
+    end;
+    fD3:
+    begin
+      edgemove(fD1);
+      edgemove(fD1);
+      edgemove(fD1);
+    end;
+    fR3:
+    begin
+      edgemove(fR1);
+      edgemove(fR1);
+      edgemove(fR1);
+    end;
+    fL3:
+    begin
+      edgemove(fL1);
+      edgemove(fL1);
+      edgemove(fL1);
+    end;
+    fF3:
+    begin
+      edgemove(fF1);
+      edgemove(fF1);
+      edgemove(fF1);
+    end;
+    fB3:
+    begin
+      edgemove(fB1);
+      edgemove(fB1);
+      edgemove(fB1);
+    end;
+
+    xU1:
+    begin
+      tmp := ecls[8];
+      ecls[8] := ecls[13];
+      ecls[13] := ecls[10];
+      ecls[10] := ecls[17];
+      ecls[17] := tmp;
+    end;
+    xD1:
+    begin
+      tmp := ecls[9];
+      ecls[9] := ecls[19];
+      ecls[19] := ecls[11];
+      ecls[11] := ecls[15];
+      ecls[15] := tmp;
+    end;
+    xR1:
+    begin
+      tmp := ecls[2];
+      ecls[2] := ecls[21];
+      ecls[21] := ecls[6];
+      ecls[6] := ecls[22];
+      ecls[22] := tmp;
+    end;
+    xL1:
+    begin
+      tmp := ecls[20];
+      ecls[20] := ecls[0];
+      ecls[0] := ecls[23];
+      ecls[23] := ecls[4];
+      ecls[4] := tmp;
+    end;
+    xF1:
+    begin
+      tmp := ecls[3];
+      ecls[3] := ecls[18];
+      ecls[18] := ecls[5];
+      ecls[5] := ecls[12];
+      ecls[12] := tmp;
+    end;
+    xB1:
+    begin
+      tmp := ecls[1];
+      ecls[1] := ecls[14];
+      ecls[14] := ecls[7];
+      ecls[7] := ecls[16];
+      ecls[16] := tmp;
+    end;
+
+    xU2:
+    begin
+      edgemove(xU1);
+      edgemove(xU1);
+    end;
+    xD2:
+    begin
+      edgemove(xD1);
+      edgemove(xD1);
+    end;
+    xR2:
+    begin
+      edgemove(xR1);
+      edgemove(xR1);
+    end;
+    xL2:
+    begin
+      edgemove(xL1);
+      edgemove(xL1);
+    end;
+    xF2:
+    begin
+      edgemove(xF1);
+      edgemove(xF1);
+    end;
+    xB2:
+    begin
+      edgemove(xB1);
+      edgemove(xB1);
+    end;
+
+    xU3:
+    begin
+      edgemove(xU1);
+      edgemove(xU1);
+      edgemove(xU1);
+    end;
+    xD3:
+    begin
+      edgemove(xD1);
+      edgemove(xD1);
+      edgemove(xD1);
+    end;
+    xR3:
+    begin
+      edgemove(xR1);
+      edgemove(xR1);
+      edgemove(xR1);
+    end;
+    xL3:
+    begin
+      edgemove(xL1);
+      edgemove(xL1);
+      edgemove(xL1);
+    end;
+    xF3:
+    begin
+      edgemove(xF1);
+      edgemove(xF1);
+      edgemove(xF1);
+    end;
+    xB3:
+    begin
+      edgemove(xB1);
+      edgemove(xB1);
+      edgemove(xB1);
+    end;
+  end;
+end;
+
+
 
 //function faceletCube.SearchUDCent(x, y: integer): boolean;
 //var

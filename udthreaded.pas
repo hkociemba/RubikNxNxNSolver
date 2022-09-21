@@ -40,8 +40,9 @@ type
     procedure showstuff6;
     procedure printApply;
   var
-    ii, jj: integer;
+    ii, jj,ns: integer;
     fcfc: faceletcube;
+    av: Double;
   protected
     procedure Execute; override;
   public
@@ -287,7 +288,7 @@ end;
 procedure makeUDAll.showstuff;
 begin
   Form1.Memo1.Lines.Add('');
-  Form1.Memo1.Lines.Add('Phase 1 - UD Centers to UD Faces:');
+  Form1.Memo1.Lines.Add('Phase 1 - U,D Centers to U or D Faces:');
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('+cross:');
 end;
@@ -295,7 +296,9 @@ end;
 procedure makeUDAll.showstuff2;
 begin
   Form1.Memo1.Lines.Add('');
-  Form1.Memo1.Lines.Add('cluster pairs:');
+  Form1.Memo1.Lines.Add(Format('+cross phase 1: %d moves, %.2f moves/orbit on average.',[ns,av]));
+  Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add('(x,y) and (y,x) orbits:');
 end;
 
 procedure makeUDAll.showstuff3;
@@ -307,13 +310,17 @@ end;
 procedure makeUDAll.showstuff4;
 begin
   Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add(Format('(x,y) and (y,x) orbits phase 1: %d moves, %.2f moves/orbit on average.',[ns,av]));
+  Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('xcross:');
 end;
 
 procedure makeUDAll.showstuff5;
 begin
   Form1.Memo1.Lines.Add('');
-  Form1.Memo1.Lines.Add('Number of moves in phase 1: ' + IntToStr(ii));
+  Form1.Memo1.Lines.Add(Format('x-cross phase1: %d moves, %.2f moves/orbit on average.',[ns,av]));
+  Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add('Total number of moves in phase 1: ' + IntToStr(ii));
   Form1.Memo1.Lines.Add('');
   Form1.BPhase1.Caption := 'Solve Phase 1';
   Form1.BPhase2.Enabled := True; //We can do Phase 2 now
@@ -339,29 +346,29 @@ var
 begin
   fc := Form1.fcube;
   totalLength := 0;
-
-  //++++++++++++++++++++++ fix Plus-cross of phase1 ++++++++++++++++++++++++++++
   synchronize(@showstuff);
+  //++++++++++++++++++++++ fix Plus-cross of phase1 ++++++++++++++++++++++++++++
+  ns:=0;
   if Odd(fc.size) then
     for i := 1 to fc.size div 2 - 1 do
     begin
       if Form1.fcube.MakeUDPlusCross1(i) then
       begin
         Inc(totalLength, fc.mvIdx);
+        Inc(ns, fc.mvIdx);
         ii := i;
         jj := fc.size div 2;
         fcfc := fc;
         synchronize(@printApply);
       end;
     end;
+    av:= ns/(fc.size div 2 - 1);
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   //++++++++++++++++++++++++++++ fix center orbits of phase 1 ++++++++++++++++++
   synchronize(@showstuff2);
-
+  ns:=0;
   for i := fc.size div 2 - 2 downto 1 do
-
-
     for j := i + 1 to fc.size div 2 - 1 do
     begin
       if Terminated then
@@ -374,17 +381,20 @@ begin
       tt := threadWrapper.Create(i, j, 25, fc);
       tt.WaitFor; // important!
       Inc(totalLength, fc.mvIdx);
+      Inc(ns, fc.mvIdx);
       ii := i;
       jj := j;
       synchronize(@printApply);
     end;
-
+    av:= ns/(fc.size div 2 - 1)/(fc.size div 2 - 2);
   //++++++++++++++++++++++++++++ fix X-cross of phase 1 ++++++++++++++++++++++++
   synchronize(@showstuff4);
+  ns:=0;
   for i := 1 to fc.size div 2 - 1 do
     if Form1.fcube.MakeUDXCross(i) then
     begin
       Inc(totalLength, fc.mvIdx);
+      Inc(ns, fc.mvIdx);
       ii := i;
       jj := i;
       fcfc := fc;
@@ -392,6 +402,7 @@ begin
     end;
   Inc(grandTotal, totalLength);
   ii := totalLength;
+   av:= ns/(fc.size div 2 - 1);
   synchronize(@showstuff5);
 end;
 
