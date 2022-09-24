@@ -115,7 +115,7 @@ end;
 
 
 //allow only face moves which do not change the brick16 coordinate
-procedure createFBFaceMoveAllowedTable;
+procedure   createFBFaceMoveAllowedTable;
 var
   a: Axis;
   slice, pcx, pcy, pcxnew, pcynew, k: integer;

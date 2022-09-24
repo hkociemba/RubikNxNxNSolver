@@ -18,15 +18,17 @@ type
     pix: integer; // number of pixels for 1/3 facelet
     // face 0..5,row index 0..size-1, column index 0..size-1
     faceCols: array of array of array of ColorIndex;
-    tmoves: array of UInt16;
+    //tmoves: array of UInt16;
     cubiCorn: array [URF .. DRB] of OrientedCorner;
     cubiEdge: array [UR .. BR] of OrientedEdge;
+    ecls: array of array of byte; //array for edgeclusters
+
+
 
     mvIdx: integer; // Helper variables for search function
     found: boolean;
     fxymoves: array [0 .. 25] of moves; // f-moves und xy-slice moves
     // permutations of the remapped edgecluster (0,y). filled with getEdgeCluster(y)
-    ecls: array [0 .. 23] of integer;
 
     //procedure setSize(s: Integer);
     function getSize: integer;
@@ -112,8 +114,12 @@ type
     procedure InvPhase4UDBrickCoord(cc, x, y: integer);
 
     //phase 5
-    procedure edgemove(mv: Moves);
-
+    procedure edgemove(x: integer; mv: Moves);
+    procedure applyMovesEdges;
+    function MakeFledge:Boolean;
+    procedure SearchFLEdge(x, sliceState, dist: byte; togo: integer);
+    function badEdgeCnt(e: Edge): integer;
+    procedure store(ed: Edge);
 
 
     //unused
@@ -152,7 +158,8 @@ type
 
 implementation
 
-uses Windows, main, Forms, phase1_tables, phase2_tables, phase3_tables, phase4_tables;
+uses Windows, main, Forms, phase1_tables, phase2_tables, phase3_tables,
+  phase4_tables, phase5_tables;
 // Wendet die Symmetrie mit dem Index 0..15 auf Cluster(x,y) an
 // idx = 8*LR2 + 4*F2 + U4
 procedure faceletCube.applySymmetryByIndex(x, y, idx: integer);
@@ -828,7 +835,7 @@ begin
   s := 0;
   for i := 0 to 22 do
     for j := i + 1 to 23 do
-      if ecls[j] < ecls[i] then
+      if ecls[y, j] < ecls[y, i] then
         Inc(s);
   Result := s mod 2;
 end;
@@ -959,7 +966,7 @@ begin
     j := 0;
     while (ECCI[j, 0] <> c[0]) or (ECCI[j, 1] <> c[1]) do
       Inc(j);
-    ecls[remapEdges[i]] := remapEdges[j];
+    ecls[y, remapEdges[i]] := remapEdges[j];
   end;
 
 end;
@@ -1476,6 +1483,24 @@ begin
       move(a, slc);
   end;
 end;
+
+procedure faceletCube.applyMovesEdges;
+var
+  mv: moves;
+  i,k: integer;
+begin
+  for k := 0 to mvIdx - 1 do
+  begin
+    mv := fxymoves[k];
+    for i:= 1 to edgemx-1 do
+    edgemove(i,mv);
+  end;
+end;
+
+
+
+
+
 
 function faceletCube.MakeUDXCross(x: integer): boolean;
 var
@@ -3049,279 +3074,728 @@ begin
   end;
 end;
 
-
 //phase 5
-procedure faceletcube.edgemove(mv: Moves);
+procedure faceletcube.edgemove(x: integer; mv: Moves);
+//ecls must be initialized!
 var
   tmp: integer;
 begin
   case mv of
     fU1:
     begin
-      tmp := ecls[0];
-      ecls[0] := ecls[3];
-      ecls[3] := ecls[2];
-      ecls[2] := ecls[1];
-      ecls[1] := tmp;
-      tmp := ecls[12];
-      ecls[12] := ecls[22];
-      ecls[22] := ecls[16];
-      ecls[16] := ecls[20];
-      ecls[20] := tmp;
+      tmp := ecls[x, 0];
+      ecls[x, 0] := ecls[x, 3];
+      ecls[x, 3] := ecls[x, 2];
+      ecls[x, 2] := ecls[x, 1];
+      ecls[x, 1] := tmp;
+      tmp := ecls[x, 12];
+      ecls[x, 12] := ecls[x, 22];
+      ecls[x, 22] := ecls[x, 16];
+      ecls[x, 16] := ecls[x, 20];
+      ecls[x, 20] := tmp;
 
     end;
     fD1:
     begin
-      tmp := ecls[4];
-      ecls[4] := ecls[7];
-      ecls[7] := ecls[6];
-      ecls[6] := ecls[5];
-      ecls[5] := tmp;
-      tmp := ecls[21];
-      ecls[21] := ecls[18];
-      ecls[18] := ecls[23];
-      ecls[23] := ecls[14];
-      ecls[14] := tmp;
+      tmp := ecls[x, 4];
+      ecls[x, 4] := ecls[x, 7];
+      ecls[x, 7] := ecls[x, 6];
+      ecls[x, 6] := ecls[x, 5];
+      ecls[x, 5] := tmp;
+      tmp := ecls[x, 21];
+      ecls[x, 21] := ecls[x, 18];
+      ecls[x, 18] := ecls[x, 23];
+      ecls[x, 23] := ecls[x, 14];
+      ecls[x, 14] := tmp;
     end;
     fR1:
     begin
-      tmp := ecls[12];
-      ecls[12] := ecls[15];
-      ecls[15] := ecls[14];
-      ecls[14] := ecls[13];
-      ecls[13] := tmp;
-      tmp := ecls[8];
-      ecls[8] := ecls[5];
-      ecls[5] := ecls[11];
-      ecls[11] := ecls[1];
-      ecls[1] := tmp;
+      tmp := ecls[x, 12];
+      ecls[x, 12] := ecls[x, 15];
+      ecls[x, 15] := ecls[x, 14];
+      ecls[x, 14] := ecls[x, 13];
+      ecls[x, 13] := tmp;
+      tmp := ecls[x, 8];
+      ecls[x, 8] := ecls[x, 5];
+      ecls[x, 5] := ecls[x, 11];
+      ecls[x, 11] := ecls[x, 1];
+      ecls[x, 1] := tmp;
     end;
     fL1:
     begin
-      tmp := ecls[16];
-      ecls[16] := ecls[19];
-      ecls[19] := ecls[18];
-      ecls[18] := ecls[17];
-      ecls[17] := tmp;
-      tmp := ecls[3];
-      ecls[3] := ecls[10];
-      ecls[10] := ecls[7];
-      ecls[7] := ecls[9];
-      ecls[9] := tmp;
+      tmp := ecls[x, 16];
+      ecls[x, 16] := ecls[x, 19];
+      ecls[x, 19] := ecls[x, 18];
+      ecls[x, 18] := ecls[x, 17];
+      ecls[x, 17] := tmp;
+      tmp := ecls[x, 3];
+      ecls[x, 3] := ecls[x, 10];
+      ecls[x, 10] := ecls[x, 7];
+      ecls[x, 7] := ecls[x, 9];
+      ecls[x, 9] := tmp;
     end;
     fF1:
     begin
-      tmp := ecls[20];
-      ecls[20] := ecls[9];
-      ecls[9] := ecls[21];
-      ecls[21] := ecls[8];
-      ecls[8] := tmp;
-      tmp := ecls[2];
-      ecls[2] := ecls[17];
-      ecls[17] := ecls[4];
-      ecls[4] := ecls[15];
-      ecls[15] := tmp;
+      tmp := ecls[x, 20];
+      ecls[x, 20] := ecls[x, 9];
+      ecls[x, 9] := ecls[x, 21];
+      ecls[x, 21] := ecls[x, 8];
+      ecls[x, 8] := tmp;
+      tmp := ecls[x, 2];
+      ecls[x, 2] := ecls[x, 17];
+      ecls[x, 17] := ecls[x, 4];
+      ecls[x, 4] := ecls[x, 15];
+      ecls[x, 15] := tmp;
     end;
     fB1:
     begin
-      tmp := ecls[22];
-      ecls[22] := ecls[11];
-      ecls[11] := ecls[23];
-      ecls[23] := ecls[10];
-      ecls[10] := tmp;
-      tmp := ecls[0];
-      ecls[0] := ecls[13];
-      ecls[13] := ecls[6];
-      ecls[6] := ecls[19];
-      ecls[19] := tmp;
+      tmp := ecls[x, 22];
+      ecls[x, 22] := ecls[x, 11];
+      ecls[x, 11] := ecls[x, 23];
+      ecls[x, 23] := ecls[x, 10];
+      ecls[x, 10] := tmp;
+      tmp := ecls[x, 0];
+      ecls[x, 0] := ecls[x, 13];
+      ecls[x, 13] := ecls[x, 6];
+      ecls[x, 6] := ecls[x, 19];
+      ecls[x, 19] := tmp;
     end;
 
     fU2:
     begin
-      edgemove(fU1);
-      edgemove(fU1);
+      edgemove(x, fU1);
+      edgemove(x, fU1);
     end;
     fD2:
     begin
-      edgemove(fD1);
-      edgemove(fD1);
+      edgemove(x, fD1);
+      edgemove(x, fD1);
     end;
     fR2:
     begin
-      edgemove(fR1);
-      edgemove(fR1);
+      edgemove(x, fR1);
+      edgemove(x, fR1);
     end;
     fL2:
     begin
-      edgemove(fL1);
-      edgemove(fL1);
+      edgemove(x, fL1);
+      edgemove(x, fL1);
     end;
     fF2:
     begin
-      edgemove(fF1);
-      edgemove(fF1);
+      edgemove(x, fF1);
+      edgemove(x, fF1);
     end;
     fB2:
     begin
-      edgemove(fB1);
-      edgemove(fB1);
+      edgemove(x, fB1);
+      edgemove(x, fB1);
     end;
 
     fU3:
     begin
-      edgemove(fU1);
-      edgemove(fU1);
-      edgemove(fU1);
+      edgemove(x, fU1);
+      edgemove(x, fU1);
+      edgemove(x, fU1);
     end;
     fD3:
     begin
-      edgemove(fD1);
-      edgemove(fD1);
-      edgemove(fD1);
+      edgemove(x, fD1);
+      edgemove(x, fD1);
+      edgemove(x, fD1);
     end;
     fR3:
     begin
-      edgemove(fR1);
-      edgemove(fR1);
-      edgemove(fR1);
+      edgemove(x, fR1);
+      edgemove(x, fR1);
+      edgemove(x, fR1);
     end;
     fL3:
     begin
-      edgemove(fL1);
-      edgemove(fL1);
-      edgemove(fL1);
+      edgemove(x, fL1);
+      edgemove(x, fL1);
+      edgemove(x, fL1);
     end;
     fF3:
     begin
-      edgemove(fF1);
-      edgemove(fF1);
-      edgemove(fF1);
+      edgemove(x, fF1);
+      edgemove(x, fF1);
+      edgemove(x, fF1);
     end;
     fB3:
     begin
-      edgemove(fB1);
-      edgemove(fB1);
-      edgemove(fB1);
+      edgemove(x, fB1);
+      edgemove(x, fB1);
+      edgemove(x, fB1);
     end;
 
     xU1:
     begin
-      tmp := ecls[8];
-      ecls[8] := ecls[13];
-      ecls[13] := ecls[10];
-      ecls[10] := ecls[17];
-      ecls[17] := tmp;
+      tmp := ecls[x, 8];
+      ecls[x, 8] := ecls[x, 13];
+      ecls[x, 13] := ecls[x, 10];
+      ecls[x, 10] := ecls[x, 17];
+      ecls[x, 17] := tmp;
     end;
     xD1:
     begin
-      tmp := ecls[9];
-      ecls[9] := ecls[19];
-      ecls[19] := ecls[11];
-      ecls[11] := ecls[15];
-      ecls[15] := tmp;
+      tmp := ecls[x, 9];
+      ecls[x, 9] := ecls[x, 19];
+      ecls[x, 19] := ecls[x, 11];
+      ecls[x, 11] := ecls[x, 15];
+      ecls[x, 15] := tmp;
     end;
     xR1:
     begin
-      tmp := ecls[2];
-      ecls[2] := ecls[21];
-      ecls[21] := ecls[6];
-      ecls[6] := ecls[22];
-      ecls[22] := tmp;
+      tmp := ecls[x, 2];
+      ecls[x, 2] := ecls[x, 21];
+      ecls[x, 21] := ecls[x, 6];
+      ecls[x, 6] := ecls[x, 22];
+      ecls[x, 22] := tmp;
     end;
     xL1:
     begin
-      tmp := ecls[20];
-      ecls[20] := ecls[0];
-      ecls[0] := ecls[23];
-      ecls[23] := ecls[4];
-      ecls[4] := tmp;
+      tmp := ecls[x, 20];
+      ecls[x, 20] := ecls[x, 0];
+      ecls[x, 0] := ecls[x, 23];
+      ecls[x, 23] := ecls[x, 4];
+      ecls[x, 4] := tmp;
     end;
     xF1:
     begin
-      tmp := ecls[3];
-      ecls[3] := ecls[18];
-      ecls[18] := ecls[5];
-      ecls[5] := ecls[12];
-      ecls[12] := tmp;
+      tmp := ecls[x, 3];
+      ecls[x, 3] := ecls[x, 18];
+      ecls[x, 18] := ecls[x, 5];
+      ecls[x, 5] := ecls[x, 12];
+      ecls[x, 12] := tmp;
     end;
     xB1:
     begin
-      tmp := ecls[1];
-      ecls[1] := ecls[14];
-      ecls[14] := ecls[7];
-      ecls[7] := ecls[16];
-      ecls[16] := tmp;
+      tmp := ecls[x, 1];
+      ecls[x, 1] := ecls[x, 14];
+      ecls[x, 14] := ecls[x, 7];
+      ecls[x, 7] := ecls[x, 16];
+      ecls[x, 16] := tmp;
     end;
 
     xU2:
     begin
-      edgemove(xU1);
-      edgemove(xU1);
+      edgemove(x, xU1);
+      edgemove(x, xU1);
     end;
     xD2:
     begin
-      edgemove(xD1);
-      edgemove(xD1);
+      edgemove(x, xD1);
+      edgemove(x, xD1);
     end;
     xR2:
     begin
-      edgemove(xR1);
-      edgemove(xR1);
+      edgemove(x, xR1);
+      edgemove(x, xR1);
     end;
     xL2:
     begin
-      edgemove(xL1);
-      edgemove(xL1);
+      edgemove(x, xL1);
+      edgemove(x, xL1);
     end;
     xF2:
     begin
-      edgemove(xF1);
-      edgemove(xF1);
+      edgemove(x, xF1);
+      edgemove(x, xF1);
     end;
     xB2:
     begin
-      edgemove(xB1);
-      edgemove(xB1);
+      edgemove(x, xB1);
+      edgemove(x, xB1);
     end;
 
     xU3:
     begin
-      edgemove(xU1);
-      edgemove(xU1);
-      edgemove(xU1);
+      edgemove(x, xU1);
+      edgemove(x, xU1);
+      edgemove(x, xU1);
     end;
     xD3:
     begin
-      edgemove(xD1);
-      edgemove(xD1);
-      edgemove(xD1);
+      edgemove(x, xD1);
+      edgemove(x, xD1);
+      edgemove(x, xD1);
     end;
     xR3:
     begin
-      edgemove(xR1);
-      edgemove(xR1);
-      edgemove(xR1);
+      edgemove(x, xR1);
+      edgemove(x, xR1);
+      edgemove(x, xR1);
     end;
     xL3:
     begin
-      edgemove(xL1);
-      edgemove(xL1);
-      edgemove(xL1);
+      edgemove(x, xL1);
+      edgemove(x, xL1);
+      edgemove(x, xL1);
     end;
     xF3:
     begin
-      edgemove(xF1);
-      edgemove(xF1);
-      edgemove(xF1);
+      edgemove(x, xF1);
+      edgemove(x, xF1);
+      edgemove(x, xF1);
     end;
     xB3:
     begin
-      edgemove(xB1);
-      edgemove(xB1);
-      edgemove(xB1);
+      edgemove(x, xB1);
+      edgemove(x, xB1);
+      edgemove(x, xB1);
     end;
   end;
 end;
+
+
+procedure faceletcube.store(ed: Edge);
+var
+  i: integer;
+begin
+  case ed of
+    FL:
+    begin
+      if badEdgeCnt(UR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+      end
+
+      else if badEdgeCnt(DR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+      end;
+    end;//FL
+    BL:
+    begin
+      if badEdgeCnt(UF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+      end
+
+      else if badEdgeCnt(DF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fL3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fL1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+      end;
+    end;
+    FR:
+    begin
+      if badEdgeCnt(UB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+      end
+
+      else if badEdgeCnt(DB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fF1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fF3;
+        Inc(mvIDx);
+      end;
+    end;
+    BR:
+    begin
+      if badEdgeCnt(UL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(UF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fU3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+      end
+
+      else if badEdgeCnt(DL) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DR) <> 0 then
+      begin
+        fxymoves[mvIDx] := fB3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fB1;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DB) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD3;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+      end
+      else if badEdgeCnt(DF) <> 0 then
+      begin
+        fxymoves[mvIDx] := fR1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fD1;
+        Inc(mvIDx);
+        fxymoves[mvIDx] := fR3;
+        Inc(mvIDx);
+      end;
+    end;//FL
+  end;
+end;
+
+function faceletCube.MakeFLEdge:Boolean;
+// fix the FL edge
+var
+  i, idx, togo, baded, freeslotU, freeslotD: integer;
+  ed: Edge;
+begin
+  //for idx := Low(fxymoves) to High(fxymoves) do
+  //  fxymoves[idx] := InitMove;
+  mvIdx := 0;
+  baded := 0;
+  for ed := UR to DB do
+    Inc(baded, badEdgeCnt(ed));
+  if baded <> 0 then //some slot empty
+  begin
+    if badEdgeCnt(FL) = 0 then  //but if other edges ore ok save them first
+    begin
+      store(FL);
+      applyMovesEdges;
+      applyMoves(-1, -1); //only face moves
+      printMoves(-1, -1);
+      Result := True;
+    end
+    else if badEdgeCnt(FR) = 0 then
+    begin
+      store(FR);
+      applyMovesEdges;
+      applyMoves(-1, -1);
+      printMoves(-1, -1);
+      Result := True;
+    end
+    else if badEdgeCnt(BR) = 0 then
+    begin
+      store(BR);
+      applyMovesEdges;
+      applyMoves(-1, -1);
+      printMoves(-1, -1);
+      Result := True;
+    end
+    else if badEdgeCnt(BL) = 0 then
+    begin
+      store(BL);
+       applyMovesEdges;
+      applyMoves(-1, -1);
+      printMoves(-1, -1);
+      Result := True;
+    end
+    else
+    begin
+      result:=false;
+    end;
+
+  end
+  else//last part of freeslice method
+  begin
+    result:=false;
+  end;
+
+end;
+
+function faceletCube.badEdgeCnt(e: Edge): integer;
+var
+  i: integer;
+begin
+  Result := 0;
+  for i := 1 to edgemx - 1 do
+  begin
+    if ecls[i, edgeidx[e, 0]] <> ecls[edgemx, edgeidx[e, 0]] then
+      Inc(Result);
+    if ecls[i, edgeidx[e, 1]] <> ecls[edgemx, edgeidx[e, 1]] then
+      Inc(Result);
+  end;
+end;
+
+
+
+procedure faceletCube.SearchFLEdge(x, sliceState, dist: byte; togo: integer);
+var
+  mv: moves;
+
+begin
+  Application.ProcessMessages;
+  if dist > togo then
+    exit;
+
+  //if (togo = 0) then
+  //begin
+  //  found := True;
+  //end
+  //else
+  //begin
+  //  mv := InitMove;
+
+  //  while True do
+  //  begin
+  //    if mvIdx = 0 then
+  //      mv := nextMovePhase4Arr[NoMove, mv]
+  //    else
+  //      mv := nextMovePhase4Arr[fxymoves[mvIdx - 1], mv];
+
+  //    if mv > xB2 then
+  //    begin
+  //      Exit;
+  //    end
+  //    else
+  //    begin
+  //      cx1 := Phase4UDXCrossMove[cx, Ord(mv)];
+  //      case mv of
+  //        fU1..fB3:
+  //        begin
+  //          b1 := Phase4UDBrickMove[b, Ord(mv)];
+  //          bo1 := bo;
+  //        end;
+  //        xU1..xB3:
+  //        begin
+  //          b1 := Phase4UDBrickMove[b, Ord(mv) + 18];
+  //          bo1 := Phase4RLFBBrickMove[bo, Ord(mv) + 18];
+  //        end;
+
+  //      end;
+
+
+  //      fxymoves[mvIdx] := mv;
+  //      Inc(mvIdx);
+  //      SearchPh4XCross(cx1, b1, bo1, togo - 1);
+
+  //      if found then
+  //        // kehre zurück, ohne mvIdx zu verändern
+  //        Exit;
+  //      Dec(mvIdx);
+  //    end;
+  //  end;
+
+  //end;
+end;
+
 
 
 

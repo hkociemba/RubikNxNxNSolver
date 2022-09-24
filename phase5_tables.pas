@@ -5,13 +5,17 @@ unit phase5_tables;
 interface
 
 
-
 uses
   Classes, SysUtils;
 
+
+
+
 implementation
+
+uses main, cubedefs;
+
 
 
 
 end.
-

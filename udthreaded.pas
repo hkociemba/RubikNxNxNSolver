@@ -310,7 +310,7 @@ end;
 procedure makeUDAll.showstuff4;
 begin
   Form1.Memo1.Lines.Add('');
-  Form1.Memo1.Lines.Add(Format('(x,y) and (y,x) orbits phase 1: %d moves, %.2f moves/orbit on average.',[ns,av]));
+  Form1.Memo1.Lines.Add(Format('oblique (x,y) and (y,x) orbits phase 1: %d moves, %.2f moves/orbit on average.',[ns,av]));
   Form1.Memo1.Lines.Add('');
   Form1.Memo1.Lines.Add('xcross:');
 end;
