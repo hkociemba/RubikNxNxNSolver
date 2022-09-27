@@ -1,10 +1,10 @@
 object Form1: TForm1
-  Left = 1785
-  Height = 845
-  Top = 401
+  Left = 1915
+  Height = 846
+  Top = 558
   Width = 1357
   Caption = 'Form1'
-  ClientHeight = 825
+  ClientHeight = 826
   ClientWidth = 1357
   Menu = MainMenu1
   OnActivate = FormActivate
@@ -13,7 +13,7 @@ object Form1: TForm1
   LCLVersion = '2.0.12.0'
   object Memo1: TMemo
     Left = 0
-    Height = 824
+    Height = 825
     Top = 1
     Width = 544
     Anchors = [akTop, akLeft, akBottom]
@@ -23,13 +23,14 @@ object Form1: TForm1
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
     Font.Quality = fqDraft
+    OnChange = Memo1Change
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 0
   end
   object PageControl2: TPageControl
     Left = 544
-    Height = 829
+    Height = 830
     Top = 1
     Width = 813
     ActivePage = TabSheet1
@@ -38,11 +39,11 @@ object Form1: TForm1
     TabOrder = 1
     object TabSheet1: TTabSheet
       Caption = 'Facelet Editor'
-      ClientHeight = 801
+      ClientHeight = 802
       ClientWidth = 805
       object PaintBoxFaces: TPaintBox
         Left = 0
-        Height = 584
+        Height = 585
         Top = 0
         Width = 809
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -53,7 +54,7 @@ object Form1: TForm1
       object GroupBox1: TGroupBox
         Left = 62
         Height = 120
-        Top = 672
+        Top = 673
         Width = 267
         Anchors = [akRight, akBottom]
         Caption = 'Reset To'
@@ -172,7 +173,7 @@ object Form1: TForm1
       object U: TButton
         Left = 78
         Height = 23
-        Top = 600
+        Top = 601
         Width = 55
         Anchors = [akRight, akBottom]
         Caption = 'U'
@@ -183,7 +184,7 @@ object Form1: TForm1
         Tag = 2
         Left = 142
         Height = 23
-        Top = 600
+        Top = 601
         Width = 55
         Anchors = [akRight, akBottom]
         Caption = 'R'
@@ -194,7 +195,7 @@ object Form1: TForm1
         Tag = 4
         Left = 198
         Height = 23
-        Top = 600
+        Top = 601
         Width = 55
         Anchors = [akRight, akBottom]
         Caption = 'F'
@@ -205,7 +206,7 @@ object Form1: TForm1
         Tag = 1
         Left = 78
         Height = 23
-        Top = 632
+        Top = 633
         Width = 55
         Anchors = [akRight, akBottom]
         Caption = 'D'
@@ -216,7 +217,7 @@ object Form1: TForm1
         Tag = 3
         Left = 142
         Height = 23
-        Top = 632
+        Top = 633
         Width = 55
         Anchors = [akRight, akBottom]
         Caption = 'L'
@@ -227,7 +228,7 @@ object Form1: TForm1
         Tag = 5
         Left = 198
         Height = 23
-        Top = 632
+        Top = 633
         Width = 55
         Anchors = [akRight, akBottom]
         Caption = 'B'
@@ -237,7 +238,7 @@ object Form1: TForm1
       object SpinSliceX: TSpinEdit
         Left = 334
         Height = 23
-        Top = 600
+        Top = 601
         Width = 54
         Anchors = [akRight, akBottom]
         MinValue = 1
@@ -247,7 +248,7 @@ object Form1: TForm1
       object SpinSliceY: TSpinEdit
         Left = 446
         Height = 23
-        Top = 600
+        Top = 601
         Width = 50
         Anchors = [akRight, akBottom]
         MinValue = 1
@@ -257,7 +258,7 @@ object Form1: TForm1
       object Label1: TLabel
         Left = 295
         Height = 15
-        Top = 604
+        Top = 605
         Width = 31
         Anchors = [akRight, akBottom]
         Caption = 'XSlice'
@@ -266,7 +267,7 @@ object Form1: TForm1
       object Label2: TLabel
         Left = 406
         Height = 15
-        Top = 604
+        Top = 605
         Width = 31
         Anchors = [akRight, akBottom]
         Caption = 'YSlice'
@@ -275,7 +276,7 @@ object Form1: TForm1
       object Label3: TLabel
         Left = 502
         Height = 15
-        Top = 766
+        Top = 767
         Width = 51
         Anchors = [akRight, akBottom]
         Caption = 'Cube Size'
@@ -284,7 +285,7 @@ object Form1: TForm1
       object SpinSize: TSpinEdit
         Left = 558
         Height = 23
-        Top = 762
+        Top = 763
         Width = 54
         Anchors = [akRight, akBottom]
         MaxValue = 145
@@ -296,7 +297,7 @@ object Form1: TForm1
       object BCustomize: TButton
         Left = 342
         Height = 25
-        Top = 760
+        Top = 761
         Width = 149
         Anchors = [akRight, akBottom]
         Caption = 'Customize selected Color'
@@ -306,7 +307,7 @@ object Form1: TForm1
       object CheckWide: TCheckBox
         Left = 510
         Height = 19
-        Top = 600
+        Top = 601
         Width = 79
         Anchors = [akRight, akBottom]
         Caption = 'Wide Turns'
@@ -315,7 +316,7 @@ object Form1: TForm1
       object Button1: TButton
         Left = 630
         Height = 25
-        Top = 600
+        Top = 601
         Width = 75
         Anchors = [akRight, akBottom]
         Caption = 'test'
@@ -325,7 +326,7 @@ object Form1: TForm1
       object BPhase1: TButton
         Left = 350
         Height = 25
-        Top = 680
+        Top = 681
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 1'
@@ -336,7 +337,7 @@ object Form1: TForm1
       object BPhase2: TButton
         Left = 437
         Height = 25
-        Top = 680
+        Top = 681
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 2'
@@ -347,7 +348,7 @@ object Form1: TForm1
       object BPhase3: TButton
         Left = 524
         Height = 25
-        Top = 680
+        Top = 681
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 3'
@@ -358,7 +359,7 @@ object Form1: TForm1
       object BPhase4: TButton
         Left = 611
         Height = 25
-        Top = 680
+        Top = 681
         Width = 80
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase4'
@@ -369,7 +370,7 @@ object Form1: TForm1
       object BPhase5: TButton
         Left = 696
         Height = 25
-        Top = 680
+        Top = 681
         Width = 75
         Anchors = [akRight, akBottom]
         Caption = 'Solve Phase 5'

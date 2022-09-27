@@ -94,6 +94,7 @@ type
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure LoadCubeClick(Sender: TObject);
+    procedure Memo1Change(Sender: TObject);
     procedure PaintBoxFacesMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
     procedure PaintBoxFacesMouseMove(Sender: TObject; Shift: TShiftState;
@@ -175,6 +176,11 @@ begin
   BPhase2.Enabled := False;
   BPhase3.Enabled := False;
   BPhase4.Enabled := False;
+end;
+
+procedure TForm1.Memo1Change(Sender: TObject);
+begin
+
 end;
 
 procedure TForm1.SaveCubeClick(Sender: TObject);
@@ -818,18 +824,33 @@ end;
 procedure TForm1.BPhase5Click(Sender: TObject);
 var
   x, bad, i: integer;
+  av:Double;
+  s:String;
 begin
   edgemx:=fcube.size div 2;
   SetLength(fcube.ecls, edgemx + 1, 24);
+
 
   for x := 1 to edgemx do // the last one defines the bricks
   begin//search vertical edge with most trivially fixed edge pieces
     fcube.getEdgeCluster(x);//these are stored as global variables
   end;
+  fcube.ns:=0;
+  //printcl;
+
+   Memo1.Lines.Add('');
+  Memo1.Lines.Add('Phase 5 - Freeslice to pair edges:');
+
   while  fcube.MakeFLEdge do
   begin
 
   end;
+
+  av := fcube.ns / (fcube.size  - 3)/8;
+  Form1.Memo1.Lines.Add('');
+  Form1.Memo1.Lines.Add(Format(
+    'Phase 5 - Freeslice to pair edges: %d moves, %.2f moves/edge on average.', [fcube.ns, av]));
+
 
 
 end;

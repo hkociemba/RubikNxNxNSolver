@@ -76,6 +76,12 @@ const
   N_SYMBRICKCOORD = 46935; // Anzahl der Äquivalenzklassen der UDBrickCoord
   N_SYMBRICK702COORD = 690; //Number of equivalence classes of Ph3Brick702Coord
 
+  invMove: array[InitMove..Nomove] of Moves =( initMove, fU3, fU2, fU1, fD3, fD2, fD1, fR3, fR2, fR1, fL3, fL2,
+    fL1, fF3, fF2, fF1, fB3, fB2, fB1, xU3, xU2, xU1, xD3, xD2, xD1, xR3, xR2,
+    xR1, xL3, xL2, xL1, xF3, xF2, xF1, xB3, xB2, xB1, yU3, yU2, yU1, yD3, yD2,
+    yD1, yR3, yR2, yR1, yL3, yL2, yL1, yF3, yF2, yF1, yB3, yB2, yB1, NoMove);
+
+
   // wohin facelets bei  180 Drehungen, deren slice durch U,R,F gehen, abgebildet werden.
   oppositeU: array [0 .. 23] of integer = (-1, -1, -1, -1, -1, -1, -1, -1, 14,
     15, 12, 13, -1, -1, -1, -1, 22, 23, 20, 21, -1, -1, -1, -1);
