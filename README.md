@@ -1,6 +1,8 @@
 # RubikNxNxNSolver
 A general solver for NxNxN Rubik's Cubes
 
+Update: I stopped the project since I realized that some specialized solver for 4x4x4 and 5x5x5 make more sense. So solving of all centers of the NxNxN is what the current code can do but solving of the remaining edges and corners will not be added in the future.
+
 This is work in progress using the free Lazarus IDE  https://www.lazarus-ide.org/ for a program to solve a NxNxN Rubik's Cube. The program yet only is in an early development state and is able to solve the centers now.
 
 For a random 101x101x101 test cube I got the following results:
